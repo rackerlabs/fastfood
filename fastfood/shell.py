@@ -11,6 +11,7 @@ import threading
 
 _local = threading.local()
 LOG = logging.getLogger(__name__)
+NAMESPACE = 'fastfood'
 
 
 def _fastfood_gen(args):
@@ -23,6 +24,16 @@ def _fastfood_new(args):
 
 def _fastfood_build(args):
     print(args)
+
+
+def _split_key_val(option):
+    key_val = option.split(':', 1)
+    assert len(key_val) == 2, "Bad option %s" % option
+    return key_val
+
+def getenv(option_name, default=None):
+    env = "%s_%s" % (NAMESPACE.upper(), option_name.upper())
+    return os.environ.get(env, default)
 
 
 def main():
@@ -55,6 +66,10 @@ def main():
                          const=logging.DEBUG,
                          help="Set log-level to DEBUG.")
     parser.set_defaults(loglevel=logging.WARNING)
+    parser.add_argument('--template-pack', help='template pack location', metavar='template_pack',
+                        default=getenv('template_pack', os.path.join(os.getenv('HOME'), '.fastfood')))
+    parser.add_argument('--cookbook-path', help='cookbooks directory', metavar='cookbook_path',
+                        default=getenv('cookbook_path', os.path.join(os.getenv('HOME'), 'cookbooks')))
 
     subparsers = parser.add_subparsers(
         dest='_subparsers', title='fastfood commands',
@@ -68,42 +83,40 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     gen_parser.add_argument('stencil_set',
                             help="Stencil set to use.")
-    gen_parser.add_argument('options', type=str, nargs='*',
+    gen_parser.add_argument('options', nargs='*', type=_split_key_val,
                             metavar='option',
                             help="Stencil options.")
+    gen_parser.add_argument('--force, -f', action='store_true', default=False,
+                            help="Overwrite existing files.")
     gen_parser.set_defaults(func=_fastfood_gen)
 
 
     #
     # `fastfood new`
     #
-    gen_parser = subparsers.add_parser(
-        'new', help='Create a new recipe for an existing cookbook.',
+    new_parser = subparsers.add_parser(
+        'new', help='Create a cookbook.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    gen_parser.add_argument('stencil_set',
-                            help="Stencil set to use.")
-    gen_parser.add_argument('options', type=str, nargs='*',
-                            metavar='option',
-                            help="Stencil options.")
-    gen_parser.set_defaults(func=_fastfood_new)
+    new_parser.add_argument('cookbook_name',
+                            help="Name of the new cookbook.")
+    new_parser.set_defaults(func=_fastfood_new)
 
 
     #
     # `fastfood build`
     #
-    gen_parser = subparsers.add_parser(
-        'build', help='Create a new recipe for an existing cookbook.',
+    build_parser = subparsers.add_parser(
+        'build', help='Create or update a cookbook using a config',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    gen_parser.add_argument('stencil_set',
-                            help="Stencil set to use.")
-    gen_parser.add_argument('options', type=str, nargs='*',
-                            metavar='option',
-                            help="Stencil options.")
-    gen_parser.set_defaults(func=_fastfood_build)
+    build_parser.add_argument('config_file',
+                            help="JSON config file")
+    build_parser.set_defaults(func=_fastfood_build)
 
 
     setattr(_local, 'argparser', parser)
     args = parser.parse_args()
+    if args.options:
+        args.options = {k:v for k,v in args.options}
 
     try:
         result = args.func(args)
