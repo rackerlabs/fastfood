@@ -26,6 +26,11 @@ def _fastfood_build(args):
     print(args)
 
 
+def _split_key_val(option):
+    key_val = option.split(':', 1)
+    assert len(key_val) == 2, "Bad option %s" % option
+    return key_val
+
 def getenv(option_name, default=None):
     env = "%s_%s" % (NAMESPACE.upper(), option_name.upper())
     return os.environ.get(env, default)
@@ -78,7 +83,7 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     gen_parser.add_argument('stencil_set',
                             help="Stencil set to use.")
-    gen_parser.add_argument('options', type=str, nargs='*',
+    gen_parser.add_argument('options', nargs='*', type=_split_key_val,
                             metavar='option',
                             help="Stencil options.")
     gen_parser.add_argument('--force, -f', action='store_true', default=False,
@@ -110,6 +115,8 @@ def main():
 
     setattr(_local, 'argparser', parser)
     args = parser.parse_args()
+    if args.options:
+        args.options = {k:v for k,v in args.options}
 
     try:
         result = args.func(args)
