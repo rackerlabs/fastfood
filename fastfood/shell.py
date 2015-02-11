@@ -9,6 +9,8 @@ import os
 import sys
 import threading
 
+from fastfood import manifest
+
 _local = threading.local()
 LOG = logging.getLogger(__name__)
 NAMESPACE = 'fastfood'
@@ -19,7 +21,11 @@ def _fastfood_gen(args):
 
 
 def _fastfood_new(args):
-    print(args)
+    cookbook_name = args.cookbook_name
+    templatepack = args.template_pack
+    cookbooks = args.cookbook_path
+    return manifest.create_new_cookbook(
+        cookbook_name, templatepack, cookbooks)
 
 
 def _fastfood_build(args):
@@ -115,7 +121,7 @@ def main():
 
     setattr(_local, 'argparser', parser)
     args = parser.parse_args()
-    if args.options:
+    if getattr(args, 'options', None):
         args.options = {k:v for k,v in args.options}
 
     try:
