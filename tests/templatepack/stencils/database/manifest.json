@@ -1,0 +1,62 @@
+{
+  "id": "database",
+  "api": 1,
+  "default_stencil": "mysql_master",
+  "berks_dependencies": {
+    "database": {}
+  },
+  "dependencies": {
+    "rackspace_iptables": {}
+  },
+  "options": {
+    "name": {
+      "help": "name of the recipe and corresponding test file"
+    },
+    "database": {
+      "help": "the name of the database to create"
+    },
+    "databag": {
+      "help": "The name of the data bag to load the mysql username and password from.  Not used if the role is a slave"
+    },
+    "user": {
+      "help": "The user to create with permissions to the database"
+    },
+    "password": {
+      "help": "The password to use for the User.  Option not used if role is slave"
+    },
+    "openfor": {
+      "help": "A tag used to locate what nodes to open the firewall for"
+    }
+  },
+  "stencils": {
+    "mysql_master": {
+      "dependencies": {
+        "database": {},
+        "mysql-multi": {}
+      },
+      "files": {
+        "recipes/<NAME>.rb": "recipes/mysql_master.rb",
+        "test/unit/spec/<NAME>_spec.rb": "test/unit/spec/mysql_master_spec.rb"
+      },
+      "options": {
+        "name": {
+          "default": "mysql_master"
+        }
+      }
+    },
+    "mysql_slave": {
+      "dependencies": {
+        "mysql-multi": {}
+      },
+      "files": {
+        "recipes/<NAME>.rb": "recipes/mysql_slave.rb",
+        "test/unit/spec/<NAME>_spec.rb": "test/unit/spec/mysql_slave_spec.rb"
+      },
+      "options": {
+        "name": {
+          "default": "mysql_slave"
+        }
+      }
+    }
+  }
+}
