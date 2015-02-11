@@ -1,11 +1,11 @@
-|{ cookbook["name"] }| CHANGELOG
+|{ cookbook['name'] }| CHANGELOG
 ===================
 
-This file is used to list changes made in each version of thhe |{ cookbook["name"] }| cookbook.
+This file is used to list changes made in each version of the |{ cookbook['name'] }| cookbook.
 
 0.1.0
 -----
-- [your_name] - Initial release of |{ cookbook["name"] }|
+- [your_name] - Initial release of |{ cookbook['name'] }|
 
 - - -
 Check the [Markdown Syntax Guide](http://daringfireball.net/projects/markdown/syntax) for hhelp with Markdown.
