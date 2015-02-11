@@ -1,4 +1,4 @@
-|{ cookbook["name"] }| Cookbook
+|{ cookbook['name'] }| Cookbook
 ==================
 TODO: Enter the cookbook description here.
 
@@ -11,14 +11,14 @@ TODO: List your cookbook requirements. Be sure to include any requirements this 
 
 e.g.
 #### packages
-- `toaster` - |{ cookbook["name"] }| needs toaster to brown your bagel.
+- `toaster` - |{ cookbook['name'] }| needs toaster to brown your bagel.
 
 Attributes
 ----------
 TODO: List your cookbook attributes here.
 
 e.g.
-#### |{ cookbook["name"] }|::default
+#### |{ cookbook['name'] }|::default
 <table>
   <tr>
     <th>Key</th>
@@ -27,7 +27,7 @@ e.g.
     <th>Default</th>
   </tr>
   <tr>
-    <td><tt>['|{ cookbook["name"] }|']['bacon']</tt></td>
+    <td><tt>['|{ cookbook['name'] }|']['bacon']</tt></td>
     <td>Boolean</td>
     <td>whether to include bacon</td>
     <td><tt>true</tt></td>
@@ -36,17 +36,17 @@ e.g.
 
 Usage
 -----
-#### |{ cookbook["name"] }|::default
+#### |{ cookbook['name'] }|::default
 TODO: Write usage instructions for each cookbook.
 
 e.g.
-Just include `|{ cookbook["name"] }|` in your node's `run_list`:
+Just include `|{ cookbook['name'] }|` in your node's `run_list`:
 
 ```json
 {
   "name":"my_node",
   "run_list": [
-    "recipe[|{ cookbook["name"] }|]"
+    "recipe[|{ cookbook['name'] }|]"
   ]
 }
 ```
