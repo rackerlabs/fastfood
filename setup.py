@@ -16,9 +16,9 @@ from setuptools import setup, find_packages
 
 
 dependencies = [
+    'jinja2==2.7.3',
 ]
 tests_require = [
-    'mock',
 ]
 
 setup(
