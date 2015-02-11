@@ -61,7 +61,7 @@ def main():
     parser = HelpfulParser(
         description=__doc__.splitlines()[0],
         epilog="\n".join(__doc__.splitlines()[1:]),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         )
 
     verbose = parser.add_mutually_exclusive_group()
