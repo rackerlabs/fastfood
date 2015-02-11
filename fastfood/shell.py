@@ -9,6 +9,8 @@ import os
 import sys
 import threading
 
+from fastfood import manifest
+
 _local = threading.local()
 LOG = logging.getLogger(__name__)
 NAMESPACE = 'fastfood'
@@ -19,7 +21,11 @@ def _fastfood_gen(args):
 
 
 def _fastfood_new(args):
-    print(args)
+    cookbook_name = args.cookbook_name
+    templatepack = args.template_pack
+    cookbooks = args.cookbooks
+    return manifest.create_new_cookbook(
+        cookbook_name, templatepack, cookbooks)
 
 
 def _fastfood_build(args):
@@ -55,7 +61,7 @@ def main():
     parser = HelpfulParser(
         description=__doc__.splitlines()[0],
         epilog="\n".join(__doc__.splitlines()[1:]),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         )
 
     verbose = parser.add_mutually_exclusive_group()
@@ -68,8 +74,8 @@ def main():
     parser.set_defaults(loglevel=logging.WARNING)
     parser.add_argument('--template-pack', help='template pack location', metavar='template_pack',
                         default=getenv('template_pack', os.path.join(os.getenv('HOME'), '.fastfood')))
-    parser.add_argument('--cookbook-path', help='cookbooks directory', metavar='cookbook_path',
-                        default=getenv('cookbook_path', os.path.join(os.getenv('HOME'), 'cookbooks')))
+    parser.add_argument('--cookbooks', help='cookbooks directory',
+                        default=getenv('cookbooks', os.path.join(os.getenv('HOME'), 'cookbooks')))
 
     subparsers = parser.add_subparsers(
         dest='_subparsers', title='fastfood commands',
@@ -115,7 +121,7 @@ def main():
 
     setattr(_local, 'argparser', parser)
     args = parser.parse_args()
-    if args.options:
+    if getattr(args, 'options', None):
         args.options = {k:v for k,v in args.options}
 
     try:
