@@ -23,7 +23,7 @@ def _fastfood_gen(args):
 def _fastfood_new(args):
     cookbook_name = args.cookbook_name
     templatepack = args.template_pack
-    cookbooks = args.cookbook_path
+    cookbooks = args.cookbooks
     return manifest.create_new_cookbook(
         cookbook_name, templatepack, cookbooks)
 
@@ -74,8 +74,8 @@ def main():
     parser.set_defaults(loglevel=logging.WARNING)
     parser.add_argument('--template-pack', help='template pack location', metavar='template_pack',
                         default=getenv('template_pack', os.path.join(os.getenv('HOME'), '.fastfood')))
-    parser.add_argument('--cookbook-path', help='cookbooks directory', metavar='cookbook_path',
-                        default=getenv('cookbook_path', os.path.join(os.getenv('HOME'), 'cookbooks')))
+    parser.add_argument('--cookbooks', help='cookbooks directory',
+                        default=getenv('cookbooks', os.path.join(os.getenv('HOME'), 'cookbooks')))
 
     subparsers = parser.add_subparsers(
         dest='_subparsers', title='fastfood commands',
