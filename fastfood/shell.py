@@ -3,7 +3,6 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import json
 import logging
 import os
 import sys
@@ -17,7 +16,9 @@ NAMESPACE = 'fastfood'
 
 
 def _fastfood_gen(args):
-    print(args)
+
+    return manifest.update_cookbook(
+        args.cookbook, args.template_pack, args.stencil_set, **args.options)
 
 
 def _fastfood_new(args):
@@ -36,6 +37,7 @@ def _split_key_val(option):
     key_val = option.split(':', 1)
     assert len(key_val) == 2, "Bad option %s" % option
     return key_val
+
 
 def getenv(option_name, default=None):
     env = "%s_%s" % (NAMESPACE.upper(), option_name.upper())
@@ -72,10 +74,14 @@ def main():
                          const=logging.DEBUG,
                          help="Set log-level to DEBUG.")
     parser.set_defaults(loglevel=logging.WARNING)
-    parser.add_argument('--template-pack', help='template pack location', metavar='template_pack',
-                        default=getenv('template_pack', os.path.join(os.getenv('HOME'), '.fastfood')))
-    parser.add_argument('--cookbooks', help='cookbooks directory',
-                        default=getenv('cookbooks', os.path.join(os.getenv('HOME'), 'cookbooks')))
+    parser.add_argument(
+        '--template-pack', help='template pack location',
+        default=getenv(
+            'template_pack', os.path.join(os.getenv('HOME'), '.fastfood')))
+    parser.add_argument(
+        '--cookbooks', help='cookbooks directory',
+        default=getenv(
+            'cookbooks', os.path.join(os.getenv('HOME'), 'cookbooks')))
 
     subparsers = parser.add_subparsers(
         dest='_subparsers', title='fastfood commands',
@@ -92,10 +98,12 @@ def main():
     gen_parser.add_argument('options', nargs='*', type=_split_key_val,
                             metavar='option',
                             help="Stencil options.")
+    gen_parser.add_argument(
+        '-c', '--cookbook', default=os.getcwd(),
+        help="Target cookbook. (defaults to current working directory)")
     gen_parser.add_argument('--force, -f', action='store_true', default=False,
                             help="Overwrite existing files.")
     gen_parser.set_defaults(func=_fastfood_gen)
-
 
     #
     # `fastfood new`
@@ -107,7 +115,6 @@ def main():
                             help="Name of the new cookbook.")
     new_parser.set_defaults(func=_fastfood_new)
 
-
     #
     # `fastfood build`
     #
@@ -115,14 +122,13 @@ def main():
         'build', help='Create or update a cookbook using a config',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     build_parser.add_argument('config_file',
-                            help="JSON config file")
+                              help="JSON config file")
     build_parser.set_defaults(func=_fastfood_build)
-
 
     setattr(_local, 'argparser', parser)
     args = parser.parse_args()
-    if getattr(args, 'options', None):
-        args.options = {k:v for k,v in args.options}
+    if hasattr(args, 'options'):
+        args.options = {k: v for k, v in args.options}
 
     try:
         result = args.func(args)
@@ -135,6 +141,7 @@ def main():
     except KeyboardInterrupt:
         sys.exit("\nStahp")
     else:
+        print('success')
         import ipdb;ipdb.set_trace()
         # result
 
