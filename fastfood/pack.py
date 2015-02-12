@@ -86,6 +86,15 @@ class StencilSet(object):
                 raise TypeError("Stencil Set value '%s' should be %s, not %s"
                                 % (key, cls, type(self.manifest[key])))
 
+    def _options(self, stencil):
+        g_opts = self.manifest.get('options', {})
+        if stencil in self._stencils:
+            l_opts = self._stencils[stencil].get('options', {})
+        else:
+            raise ValueError("Stencil %s not a valid stencil" % stencil)
+
+        return g_opts.update(l_opts)
+
     def load_stencils(self):
         if self.manifest.get('stencils'):
             self._stencils = self.manifest.get('stencils')
@@ -102,6 +111,14 @@ class StencilSet(object):
     def stencils(self):
         return self._stencils
 
-    @property
-    def options(self, stencil):
-        pass
+    def option_values(self, stencil, **o_map):
+        opts = self._options(stencil)
+        for opt in opts:
+            if opt not in o_map:
+                val = opt.get('default')
+                if val:
+                    o_map[opt] = val
+                else:
+                    o_map[opt] = ''
+
+        return o_map
