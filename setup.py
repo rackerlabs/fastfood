@@ -16,6 +16,8 @@
 
 """Fastfood packaging and installation."""
 
+import ast
+import re
 from setuptools import setup, find_packages
 
 
@@ -25,12 +27,38 @@ DEPENDENCIES = [
 TESTS_REQUIRE = [
 ]
 
+
+def package_meta():
+    """Read __init__.py for global package metadata.
+
+    Do this without importing the package.
+    """
+    _version_re = re.compile(r'__version__\s+=\s+(.*)')
+    _url_re = re.compile(r'__url__\s+=\s+(.*)')
+    _license_re = re.compile(r'__license__\s+=\s+(.*)')
+
+    with open('fastfood/__init__.py', 'rb') as ffinit:
+        initcontent = ffinit.read()
+        version = str(ast.literal_eval(_version_re.search(
+            initcontent.decode('utf-8')).group(1)))
+        url = str(ast.literal_eval(_url_re.search(
+            initcontent.decode('utf-8')).group(1)))
+        licencia = str(ast.literal_eval(_license_re.search(
+            initcontent.decode('utf-8')).group(1)))
+    return {
+        'version': version,
+        'license': licencia,
+        'url': url,
+    }
+
+_ff_meta = package_meta()
+
+
 setup(
     name='fastfood',
-    description='...',
-    keywords='...',
-    version='1.0',
-    url='https://github.com/rackerlabs/fastfood',
+    description='Chef Cookbook Wizardry',
+    keywords='chef cookbook templates',
+    version=_ff_meta['version'],
     tests_require=TESTS_REQUIRE,
     test_suite='tests',
     install_requires=DEPENDENCIES,
@@ -39,7 +67,10 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 2.7",
     ],
-    license='Apache License (2.0)',
+    license=_ff_meta['license'],
+    maintainer='samstav',
+    maintainer_email='smlstvnh@gmail.com',
+    url=_ff_meta['url'],
     entry_points={
         'console_scripts': [
             'fastfood=fastfood.shell:main'
