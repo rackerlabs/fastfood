@@ -9,7 +9,7 @@ postgres_creds = Chef::EncryptedDataBagItem.load(
   '|{ options['databag'] }|',
   node.chef_environment
 )
-{% end %}
+{% endif %}
 {% if options['openfor'] != "" %}
 search_string = "chef_environment:#{node.chef_environment} AND tags:|{ options['openfor'] }|"
 search_add_iptables_rules(
@@ -32,14 +32,14 @@ unless app_nodes.empty?
       user: postgres_creds['username'],
       {% else %}
       user: |{ options['user'] }|,
-      {% end %}
+      {% endif %}
       addr: "#{best_ip_for(anode)}/32",
       method: 'md5'
     }
   end
 end
-{% end %}
-{% end %}
+{% endif %}
+{% endif %}
 include_recipe 'pg-multi'
 include_recipe 'database::postgres'
 {% if options['database'] != "" %}
@@ -74,5 +74,5 @@ postgresql_database_user |{ options['user'] }| do
   password |{ options['password'] }|
   privileges [:all]
 end
-{% end %}
-{% end %}
+{% endif %}
+{% endif %}

@@ -12,5 +12,5 @@ describe '|{ cookbook['name'] }|::|{ options['name'] }|' do
   it 'creates the mysql_database |{ options['database'] }|' do
     expect(chef_run).create_mysql_database(|{ options['database'] }|)
   end
-{% end %}
+{% endif %}
 end
