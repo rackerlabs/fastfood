@@ -7,6 +7,15 @@ from fastfood import utils
 
 class CookBook(object):
 
+    berks_options = [
+        'branch',
+        'git',
+        'path',
+        'ref',
+        'revision',
+        'tag',
+    ]
+
     def __init__(self, path):
         self.path = utils.normalize_path(path)
         self._metadata = None
@@ -39,29 +48,56 @@ class CookBook(object):
 
     def _parse_berksfile(self):
         assert os.path.isfile(self.berks_path), "Berksfile not found"
-        # allowed options
-        #   - branch
-        #   - git
-        #   - path
-        #   - ref
-        #   - revision
-        #   - tag
-        #
-
-    # see https://github.com/the-galley/chef-templatepack/blob/master/base/Berksfile
+        with open(self.berks_path) as berks:
+            data = utils.ruby_lines(berks.readlines())
+        data = [tuple(j.strip() for j in line.split(None, 1))
+                for line in data]
+        datamap = {}
+        for line in data:
+            if len(line) == 1:
+                datamap[line[0]] = True
+            elif len(line) == 2:
+                key, value = line
+                if key == 'cookbook':
+                    datamap.setdefault('cookbook', {})
+                    value = [utils.ruby_strip(v) for v in value.split(',')]
+                    lib, detail = value[0], value[1:]
+                    datamap['cookbook'].setdefault(lib, {})
+                    # if there is additional dependency data but its
+                    # not the ruby hash, its the version constraint
+                    if detail and not any("".join(detail).startswith(o)
+                                          for o in self.berks_options):
+                        constraint, detail = detail[0], detail[1:]
+                        datamap['cookbook'][lib]['constraint'] = constraint
+                    if detail:
+                        for deet in detail:
+                            opt, val = [
+                                utils.ruby_strip(i)
+                                for i in deet.split(':', 1)
+                            ]
+                            if not any(opt == o for o in self.berks_options):
+                                raise ValueError(
+                                    "Cookbook detail '%s' does not specify "
+                                    "one of '%s'" % (opt, self.berks_options))
+                            else:
+                                datamap['cookbook'][lib][opt.strip(':')] = (
+                                    utils.ruby_strip(val))
+                else:
+                    datamap[key] = utils.ruby_strip(value)
+        return datamap
 
     def _parse_metadata(self):
         """Open metadata.rb and generate useful map."""
         assert os.path.isfile(self.metadata_path), "metadata.rb not found"
         with open(self.metadata_path) as meta:
-            data = meta.readlines()
-        # honors pound sign comments but not ruby block comments
-        data = [l.replace('\t', ' ') for l in data if l.strip()
-                and not l.strip().startswith('#')]
+            data = utils.ruby_lines(meta.readlines())
         data = [tuple(j.strip() for j in line.split(None, 1))
                 for line in data]
         depends = {}
-        for key, value in data:
+        for line in data:
+            if not len(line) == 2:
+                continue
+            key, value = line
             if key == 'depends':
                 value = value.split(',')
                 lib = utils.ruby_strip(value[0])
@@ -72,11 +108,38 @@ class CookBook(object):
             data['depends'] = depends
         return data
 
+    def write_berksfile_dependencies(self, dependencies):
+        """Insert new 'cookbook' statements and return parsed berksfile."""
+        if not dependencies:
+            return self.berksfile
+        assert os.path.isfile(self.berks_path), "Berksfile not found"
+        assert isinstance(dependencies, list), "not a list"
+        with open(self.berks_path, 'r+') as berks:
+            orig_content = berks.readlines()
+            new_content = copy.copy(orig_content)
+            for line in reversed(orig_content):
+                if line.startswith('cookbook'):
+                    where = orig_content.index(line) + 1
+                    break
+            else:  # they should have called it elifnobreak:
+                where = len(orig_content)
+
+            for dep in dependencies:
+                print "writing to Berksfile : %s" % dep
+                new_content.insert(where, dep)
+            if new_content != orig_content:
+                berks.seek(0)
+                berks.writelines(new_content)
+        # reset self.metadata property
+        self._berksfile = None
+        return self.berksfile
+
     def write_metadata_dependencies(self, dependencies):
         """Insert new 'depends' statements and return parsed metadata."""
         if not dependencies:
             return self.metadata
         assert os.path.isfile(self.metadata_path), "metadata.rb not found"
+        assert isinstance(dependencies, list), "not a list"
         with open(self.metadata_path, 'r+') as meta:
             orig_content = meta.readlines()
             new_content = copy.copy(orig_content)
@@ -88,9 +151,8 @@ class CookBook(object):
                 where = len(orig_content)
 
             for dep in dependencies:
+                print "writing to metadata.rb : %s" % dep
                 new_content.insert(where, dep)
-            # uniq
-            new_content = list(set(new_content))
             if new_content != orig_content:
                 meta.seek(0)
                 meta.writelines(new_content)

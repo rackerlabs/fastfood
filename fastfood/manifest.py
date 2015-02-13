@@ -1,5 +1,4 @@
 
-import collections
 import datetime
 import errno
 import logging
@@ -13,30 +12,70 @@ from fastfood import utils
 LOG = logging.getLogger(__name__)
 
 
-def update_cookbook(cookbook_path, templatepack, stencilset, **options):
+def update_cookbook(cookbook_path, templatepack, stencilset_name, **options):
 
     tmppack = pack.TemplatePack(templatepack)
     cookbook = book.CookBook(cookbook_path)
     existing_deps = cookbook.metadata.get('depends', {}).keys()
-    stencil = tmppack.load_stencil(stencilset)
-    stencil_deps = stencil.manifest.get('dependencies', {})
-    writelines = collections.deque()
+    stencilset = tmppack.load_stencil_set(stencilset_name)
+
+    if 'default_stencil' not in options:
+        selected_stencil = stencilset.manifest.get('default_stencil')
+    else:
+        selected_stencil = options['default_stencil']
+    if not selected_stencil:
+        raise ValueError("No %s stencil specified." % stencilset_name)
+
+    stencil = stencilset.get_stencil(selected_stencil, **options)
+
+    stencil_deps = stencil.get('dependencies', {})
+
+    # metadata dependencies
+    metadata_writelines = []
     for lib, meta in stencil_deps.iteritems():
         if lib in existing_deps:
             continue
         elif meta and not isinstance(meta, list):
             raise TypeError("Stencil dependency metadata for %s in %s "
                             "should be an array of options, not %s."
-                            % (lib, stencil.manifest_path, type(meta)))
-        elif meta:
-            line = "depends '%s'" % "', '".join(meta)
-            writelines.append(line)
+                            % (lib, stencilset.manifest_path, type(meta)))
         else:
-            writelines.append("depends '%s'" % lib)
-    if writelines:
-        updated_meta = cookbook.write_metadata_dependencies(writelines)
+            line = "depends '%s'" % lib
+            if meta:
+                line = "%s '%s'" % (line, "', '".join(meta))
+            metadata_writelines.append("%s\n" % line)
 
-    import ipdb;ipdb.set_trace()
+    # berks dependencies
+    berksfile_writelines = []
+    berksfile = cookbook.berksfile
+    stencil_berks_deps = stencil.get('berks_dependencies', {})
+    for lib, meta in stencil_berks_deps.iteritems():
+        if lib in berksfile.get('cookbook', {}):
+            continue
+        elif meta and not isinstance(meta, dict):
+            raise TypeError("Berksfile dependency hash for %s in %s "
+                            "should be a dict of options, not %s."
+                            % (lib, stencilset.manifest_path, type(meta)))
+        else:
+            line = "cookbook '%s'" % lib
+            if meta:
+                # not like the others...
+                if 'constraint' in meta:
+                    line += ", '%s'" % meta.pop('constraint')
+                for opt, spec in meta.iteritems():
+                    line += ", %s: '%s'" % (opt, spec)
+            berksfile_writelines.append("%s\n" % line)
+
+    # TODO: render files in stencil['files']
+    # get recipe/test files?
+
+    if metadata_writelines:
+        cookbook.write_metadata_dependencies(
+            metadata_writelines)
+
+    if berksfile_writelines:
+        cookbook.write_berksfile_dependencies(
+            berksfile_writelines)
 
 
 def create_new_cookbook(cookbook_name, templatepack,
