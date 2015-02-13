@@ -19,10 +19,10 @@ def update_cookbook(cookbook_path, templatepack, stencilset_name, **options):
     existing_deps = cookbook.metadata.get('depends', {}).keys()
     stencilset = tmppack.load_stencil_set(stencilset_name)
 
-    if 'default_stencil' not in options:
+    if 'stencil' not in options:
         selected_stencil = stencilset.manifest.get('default_stencil')
     else:
-        selected_stencil = options['default_stencil']
+        selected_stencil = options['stencil']
     if not selected_stencil:
         raise ValueError("No %s stencil specified." % stencilset_name)
 
