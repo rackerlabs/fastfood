@@ -125,4 +125,17 @@ class StencilSet(object):
             if opt not in options:
                 options[opt] = data.get('default', '')
         stencil['options'] = options
+
+        name = stencil['options'].get('name')
+        files = stencil['files'].copy()
+        for fil, templ in files.iteritems():
+            if '<NAME>' in fil:
+                # check for the option b/c there are cases in which it may not exist
+                if not name:
+                    raise ValueError("Stencil does not include a name option")
+
+                stencil['files'].pop(fil)
+                fil = fil.replace('<NAME>', name)
+                stencil['files'][fil] = templ
+
         return stencil
