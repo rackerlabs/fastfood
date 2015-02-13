@@ -2,7 +2,7 @@
 # Cookbook Name:: |{ cookbook['name'] }|
 # Recipe :: |{ options['name'] }|
 #
-# Copyright |{ cookbook['Year'] }|, Rackspace
+# Copyright |{ cookbook['year'] }|, Rackspace
 #
 
 include_recipe 'mysql-multi::mysql_master'
@@ -16,7 +16,7 @@ search_add_iptables_rules(
   70,
   'access to mysql'
 )
-{% end %}
+{% endif %}
 
 {% if options['database'] != "" %}
 conn = {
@@ -55,5 +55,5 @@ mysql_database_user |{ qstring(options['user']) }| do
   database_name |{ qstring(options['database']) }|
   action :create
 end
-{% end %}
-{% end %}
+{% endif %}
+{% endif %}

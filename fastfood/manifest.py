@@ -1,4 +1,7 @@
 
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import datetime
 import errno
 import logging
@@ -14,6 +17,7 @@ LOG = logging.getLogger(__name__)
 
 def update_cookbook(cookbook_path, templatepack, stencilset_name, **options):
 
+    force = options.get('force', False)
     tmppack = pack.TemplatePack(templatepack)
     cookbook = book.CookBook(cookbook_path)
     existing_deps = cookbook.metadata.get('depends', {}).keys()
@@ -66,8 +70,43 @@ def update_cookbook(cookbook_path, templatepack, stencilset_name, **options):
                     line += ", %s: '%s'" % (opt, spec)
             berksfile_writelines.append("%s\n" % line)
 
-    # TODO: render files in stencil['files']
-    # get recipe/test files?
+    files = {
+        # files.keys() are template paths, files.values() are target paths
+        # {path to template: rendered target path, ... }
+        os.path.join(stencilset.path, tpl): os.path.join(cookbook.path, tgt)
+        for tgt, tpl in stencil['files'].iteritems()
+    }
+
+    template_map = {
+        'options': stencil['options'],
+        'cookbook': cookbook.metadata.copy(),
+    }
+    template_map['cookbook']['year'] = datetime.datetime.now().year
+    filetable = templating.render_templates(
+        *files.keys(), **template_map)
+    for tpl_path, content in filetable:
+        target_path = files[tpl_path]
+        needdir = os.path.dirname(target_path)
+        assert needdir, "Target should have valid parent dir"
+        try:
+            os.makedirs(needdir)
+        except OSError as err:
+            if err.errno != errno.EEXIST:
+                raise
+
+        if os.path.isfile(target_path):
+            if force:
+                LOG.warning("Forcing overwrite of existing file %s.",
+                            target_path)
+            else:
+                print("Skipping existing file %s" % target_path)
+                LOG.info("Skipping existing file %s", target_path)
+                continue
+        else:
+            with open(target_path, 'w') as newfile:
+                print("Writing rendered file %s" % target_path)
+                LOG.info("Writing rendered file %s", target_path)
+                newfile.write(content)
 
     if metadata_writelines:
         cookbook.write_metadata_dependencies(
