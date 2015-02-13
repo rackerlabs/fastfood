@@ -1,4 +1,5 @@
 
+import copy
 import json
 import os
 
@@ -44,15 +45,16 @@ class TemplatePack(object):
         return self._stencil_sets
 
     def __getattr__(self, stencilset_name):
-        """Shortcut to self.load_stencil()."""
-        return self.load_stencil(stencilset_name)
+        """Shortcut to self.load_stencil_set()."""
+        return self.load_stencil_set(stencilset_name)
 
     def load_stencil_set(self, stencilset_name):
         """Return the Stencil Set from this template pack."""
         if stencilset_name not in self._stencil_sets:
             if stencilset_name not in self.manifest['stencil_sets'].keys():
-                raise AttributeError("Stencil set not listed in %s under "
-                                     "stencil_sets." % self.manifest_path)
+                raise AttributeError("Stencil set '%s' not listed in %s under "
+                                     "stencil_sets."
+                                     % (stencilset_name, self.manifest_path))
             stencil_path = os.path.join(
                 self.path, 'stencils', stencilset_name)
             try:
@@ -65,6 +67,10 @@ class TemplatePack(object):
 class StencilSet(object):
 
     def __init__(self, path):
+        # assign these attrs early
+        self._manifest = None
+        self._stencils = {}
+
         self.path = utils.normalize_path(path)
         if not os.path.isdir(path):
             raise ValueError("Stencil Set dir %s does not exist." % path)
@@ -73,9 +79,7 @@ class StencilSet(object):
             raise ValueError("Stencil Set needs manifest file, %s"
                              % self.manifest_path)
         self._validate('api', cls=int)
-        self._validate('default_stencil', cls=str)
-        self._manifest = None
-        self._stencils = {}
+        self._validate('default_stencil', cls=basestring)
 
     def _validate(self, key, cls=None):
         if key not in self.manifest:
@@ -95,11 +99,6 @@ class StencilSet(object):
 
         return g_opts.update(l_opts)
 
-    def load_stencils(self):
-        if self.manifest.get('stencils'):
-            self._stencils = self.manifest.get('stencils')
-        return self._stencils
-
     @property
     def manifest(self):
         if not self._manifest:
@@ -111,14 +110,19 @@ class StencilSet(object):
     def stencils(self):
         return self._stencils
 
-    def option_values(self, stencil, **o_map):
-        opts = self._options(stencil)
-        for opt in opts:
-            if opt not in o_map:
-                val = opt.get('default')
-                if val:
-                    o_map[opt] = val
-                else:
-                    o_map[opt] = ''
+    def get_stencil(self, stencil_name, **options):
+        if stencil_name not in self.manifest.get('stencils', {}):
+            raise ValueError("Stencil '%s' not declared in StencilSet "
+                             "manifest." % stencil_name)
+        stencil = copy.deepcopy(self.manifest)
+        allstencils = stencil.pop('stencils')
+        stencil.pop('default_stencil', None)
+        override = allstencils[stencil_name]
+        utils.deepupdate(stencil, override)
 
-        return o_map
+        # merge options, prefer **options (probably user-supplied)
+        for opt, data in stencil.get('options', {}).iteritems():
+            if opt not in options:
+                options[opt] = data.get('default', '')
+        stencil['options'] = options
+        return stencil
