@@ -22,15 +22,15 @@ def _fastfood_gen(args):
 
 
 def _fastfood_new(args):
-    cookbook_name = args.cookbook_name
-    templatepack = args.template_pack
-    cookbooks = args.cookbooks
     return manifest.create_new_cookbook(
-        cookbook_name, templatepack, cookbooks)
+        args.cookbook_name, args.template_pack, args.cookbooks)
 
 
 def _fastfood_build(args):
-    print(args)
+
+    return manifest.build_cookbook(
+        args.config_file, args.template_pack,
+        args.cookbooks, cookbook_path=args.cookbook)
 
 
 def _split_key_val(option):
@@ -123,6 +123,9 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     build_parser.add_argument('config_file',
                               help="JSON config file")
+    build_parser.add_argument(
+        '-c', '--cookbook', default=os.getcwd(),
+        help="Target cookbook (optional).")
     build_parser.set_defaults(func=_fastfood_build)
 
     setattr(_local, 'argparser', parser)
@@ -131,7 +134,7 @@ def main():
         args.options = {k: v for k, v in args.options}
 
     try:
-        result = args.func(args)
+        print(args.func(args))
     except Exception as err:
         traceback.print_exc()
         # todo: tracack in -v or -vv mode?
@@ -142,7 +145,6 @@ def main():
         sys.exit("\nStahp")
     else:
         print('success')
-        import ipdb;ipdb.set_trace()
         # result
 
 if __name__ == '__main__':
