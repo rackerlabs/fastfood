@@ -8,7 +8,7 @@ import os
 import sys
 import threading
 
-from fastfood import manifest
+from fastfood import food
 
 _local = threading.local()
 LOG = logging.getLogger(__name__)
@@ -17,18 +17,18 @@ NAMESPACE = 'fastfood'
 
 def _fastfood_gen(args):
 
-    return manifest.update_cookbook(
+    return food.update_cookbook(
         args.cookbook, args.template_pack, args.stencil_set, **args.options)
 
 
 def _fastfood_new(args):
-    return manifest.create_new_cookbook(
+    return food.create_new_cookbook(
         args.cookbook_name, args.template_pack, args.cookbooks)
 
 
 def _fastfood_build(args):
 
-    return manifest.build_cookbook(
+    return food.build_cookbook(
         args.config_file, args.template_pack,
         args.cookbooks, cookbook_path=args.cookbook)
 
