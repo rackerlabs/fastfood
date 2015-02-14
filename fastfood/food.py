@@ -1,9 +1,25 @@
+# Copyright 2015 Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Fastfood core module."""
 
 from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
 import errno
+import json
 import logging
 import os
 
@@ -13,6 +29,35 @@ from fastfood import templating
 from fastfood import utils
 
 LOG = logging.getLogger(__name__)
+
+
+def build_cookbook(build_config, templatepack, cookbooks_home,
+                   cookbook_path=None, force=False):
+
+    with open(build_config) as cfg:
+        cfg = json.load(cfg)
+
+    cookbook = None
+    if cookbook_path:
+        try:
+            cookbook = book.CookBook(cookbook_path)
+        # change this to a more specific error
+        except ValueError:
+            # create a new one please
+            pass
+
+    if not cookbook:
+        cookbook_name = cfg['name']
+        cookbook = create_new_cookbook(
+            cookbook_name, templatepack, cookbooks_home, force=force)
+
+    for stencil in cfg['stencils']:
+        stencil_set = stencil.pop('stencil_set')
+        name = stencil.pop('name')
+        # items left un-popped are **options
+        update_cookbook(
+            cookbook.path, templatepack, stencil_set, name=name, **stencil)
+    return cookbook
 
 
 def update_cookbook(cookbook_path, templatepack, stencilset_name, **options):
@@ -118,17 +163,17 @@ def update_cookbook(cookbook_path, templatepack, stencilset_name, **options):
 
 
 def create_new_cookbook(cookbook_name, templatepack,
-                        target, force_new=False):
+                        cookbooks_home, force=False):
     """Create a new cookbook.
 
     :param cookbook_name: Name of the new cookbook.
     :param templatepack: Path to templatepack.
-    :param target: Target dir for new cookbook.
+    :param cookbooks_home: Target dir for new cookbook.
 
     TODO:
         return something, like files added or path to new cookbook or both
     """
-    target = utils.normalize_path(target)
+    cookbooks_home = utils.normalize_path(cookbooks_home)
 
     tmppack = pack.TemplatePack(templatepack)
     tpmanifest = tmppack.manifest
@@ -148,9 +193,9 @@ def create_new_cookbook(cookbook_name, templatepack,
             raise ValueError("Unknown 'base' option '%s'" % option)
 
     if files:
-        if not os.path.exists(target):
+        if not os.path.exists(cookbooks_home):
             raise ValueError("Target cookbook dir %s does not exist."
-                             % os.path.relpath(target))
+                             % os.path.relpath(cookbooks_home))
 
     template_map = {
         'cookbook': {
@@ -165,7 +210,7 @@ def create_new_cookbook(cookbook_name, templatepack,
     filetable = templating.render_templates(*template_files, **template_map)
 
     for path in directories:
-        target_dir = os.path.join(target, cookbook_name, path)
+        target_dir = os.path.join(cookbooks_home, cookbook_name, path)
         LOG.debug("Creating dir -> %s", target_dir)
         try:
             os.makedirs(target_dir)
@@ -178,7 +223,7 @@ def create_new_cookbook(cookbook_name, templatepack,
 
     for orig_path, content in filetable:
         target_path = os.path.join(
-            target, cookbook_name, path_map[orig_path])
+            cookbooks_home, cookbook_name, path_map[orig_path])
         needdir = os.path.dirname(target_path)
         assert needdir, "Target should have valid parent dir"
         try:
@@ -188,7 +233,7 @@ def create_new_cookbook(cookbook_name, templatepack,
                 raise
 
         if os.path.isfile(target_path):
-            if force_new:
+            if force:
                 LOG.warning("Forcing overwrite of existing file %s.",
                             target_path)
             else:
@@ -198,3 +243,4 @@ def create_new_cookbook(cookbook_name, templatepack,
             with open(target_path, 'w') as newfile:
                 LOG.info("Writing rendered file %s", target_path)
                 newfile.write(content)
+    return book.CookBook(os.path.join(cookbooks_home, cookbook_name))

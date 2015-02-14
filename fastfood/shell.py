@@ -1,5 +1,22 @@
-# -*- coding: utf-8 -*-
-"""fastfood - cookbook wizardry"""
+# Copyright 2015 Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Fastfood - cookbook wizardry.
+
+CLI Module
+"""
+
 from __future__ import print_function
 from __future__ import unicode_literals
 
@@ -8,7 +25,7 @@ import os
 import sys
 import threading
 
-from fastfood import manifest
+from fastfood import food
 
 _local = threading.local()
 LOG = logging.getLogger(__name__)
@@ -17,20 +34,20 @@ NAMESPACE = 'fastfood'
 
 def _fastfood_gen(args):
 
-    return manifest.update_cookbook(
+    return food.update_cookbook(
         args.cookbook, args.template_pack, args.stencil_set, **args.options)
 
 
 def _fastfood_new(args):
-    cookbook_name = args.cookbook_name
-    templatepack = args.template_pack
-    cookbooks = args.cookbooks
-    return manifest.create_new_cookbook(
-        cookbook_name, templatepack, cookbooks)
+    return food.create_new_cookbook(
+        args.cookbook_name, args.template_pack, args.cookbooks)
 
 
 def _fastfood_build(args):
-    print(args)
+
+    return food.build_cookbook(
+        args.config_file, args.template_pack,
+        args.cookbooks, cookbook_path=args.cookbook)
 
 
 def _split_key_val(option):
@@ -123,6 +140,9 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     build_parser.add_argument('config_file',
                               help="JSON config file")
+    build_parser.add_argument(
+        '-c', '--cookbook', default=os.getcwd(),
+        help="Target cookbook (optional).")
     build_parser.set_defaults(func=_fastfood_build)
 
     setattr(_local, 'argparser', parser)
@@ -131,7 +151,7 @@ def main():
         args.options = {k: v for k, v in args.options}
 
     try:
-        result = args.func(args)
+        print(args.func(args))
     except Exception as err:
         traceback.print_exc()
         # todo: tracack in -v or -vv mode?
@@ -142,7 +162,6 @@ def main():
         sys.exit("\nStahp")
     else:
         print('success')
-        import ipdb;ipdb.set_trace()
         # result
 
 if __name__ == '__main__':
