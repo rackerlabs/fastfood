@@ -147,11 +147,11 @@ def update_cookbook(cookbook_path, templatepack, stencilset_name, **options):
                 print("Skipping existing file %s" % target_path)
                 LOG.info("Skipping existing file %s", target_path)
                 continue
-        else:
-            with open(target_path, 'w') as newfile:
-                print("Writing rendered file %s" % target_path)
-                LOG.info("Writing rendered file %s", target_path)
-                newfile.write(content)
+
+        with open(target_path, 'w') as newfile:
+            print("Writing rendered file %s" % target_path)
+            LOG.info("Writing rendered file %s", target_path)
+            newfile.write(content)
 
     if metadata_writelines:
         cookbook.write_metadata_dependencies(
