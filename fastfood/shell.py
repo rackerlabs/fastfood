@@ -29,13 +29,16 @@ from fastfood import food
 
 _local = threading.local()
 LOG = logging.getLogger(__name__)
+
+
 NAMESPACE = 'fastfood'
 
 
 def _fastfood_gen(args):
 
     return food.update_cookbook(
-        args.cookbook, args.template_pack, args.stencil_set, **args.options)
+        args.cookbook, args.template_pack, args.stencil_set,
+        force=args.force, **args.options)
 
 
 def _fastfood_new(args):
@@ -118,8 +121,8 @@ def main():
     gen_parser.add_argument(
         '-c', '--cookbook', default=os.getcwd(),
         help="Target cookbook. (defaults to current working directory)")
-    gen_parser.add_argument('--force, -f', action='store_true', default=False,
-                            help="Overwrite existing files.")
+    gen_parser.add_argument('--force', '-f', action='store_true',
+                            default=False, help="Overwrite existing files.")
     gen_parser.set_defaults(func=_fastfood_gen)
 
     #
@@ -149,6 +152,8 @@ def main():
     args = parser.parse_args()
     if hasattr(args, 'options'):
         args.options = {k: v for k, v in args.options}
+
+    logging.basicConfig(level=args.loglevel)
 
     try:
         print(args.func(args))
