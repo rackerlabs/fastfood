@@ -15,12 +15,27 @@
 """Jinja templating for Fastfood."""
 
 import os
+import re
 
 import jinja2
 
 # create a jinja env, overriding delimiters
 JINJA_ENV = jinja2.Environment(variable_start_string='|{',
                                variable_end_string='}|')
+NODE_ATTR_RE = '^node((\[\'([\w_-]+)\'\])+)'
+CHEF_CONST_RE = '^node\.([\w_-]+)'
+
+
+def qstring(option):
+    if (re.match(NODE_ATTR_RE, option) == None and
+            re.match(CHEF_CONST_RE, option) == None):
+        return "'%s'" % option
+    else:
+        return option
+
+
+JINJA_ENV.globals['qstring'] = qstring
+
 
 def render_templates(*files, **template_map):
     """Render jinja templates according to template_map.
