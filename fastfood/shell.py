@@ -29,8 +29,6 @@ from fastfood import food
 
 _local = threading.local()
 LOG = logging.getLogger(__name__)
-
-
 NAMESPACE = 'fastfood'
 
 
