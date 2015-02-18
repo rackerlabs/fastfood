@@ -21,7 +21,8 @@ import jinja2
 
 # create a jinja env, overriding delimiters
 JINJA_ENV = jinja2.Environment(variable_start_string='|{',
-                               variable_end_string='}|')
+                               variable_end_string='}|',
+                               trim_blocks=True)
 NODE_ATTR_RE = '^node((\[\'([\w_-]+)\'\])+)'
 CHEF_CONST_RE = '^node\.([\w_-]+)'
 
