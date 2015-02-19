@@ -221,6 +221,7 @@ def create_new_cookbook(cookbook_name, templatepack,
                 LOG.info("Skipping existing directory %s",
                          target_dir)
 
+    written_files = []
     for orig_path, content in filetable:
         target_path = os.path.join(
             cookbooks_home, cookbook_name, path_map[orig_path])
@@ -239,8 +240,9 @@ def create_new_cookbook(cookbook_name, templatepack,
             else:
                 LOG.info("Skipping existing file %s", target_path)
                 continue
-        else:
-            with open(target_path, 'w') as newfile:
-                LOG.info("Writing rendered file %s", target_path)
-                newfile.write(content)
-    return book.CookBook(os.path.join(cookbooks_home, cookbook_name))
+        with open(target_path, 'w') as newfile:
+            LOG.info("Writing rendered file %s", target_path)
+            written_files.append(target_path)
+            newfile.write(content)
+
+    return written_files
