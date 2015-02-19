@@ -40,8 +40,14 @@ def _fastfood_gen(args):
 
 
 def _fastfood_new(args):
-    return food.create_new_cookbook(
+    written_files = food.create_new_cookbook(
         args.cookbook_name, args.template_pack, args.cookbooks)
+
+    if len(written_files) > 0:
+        print("%s: %s files written" % (args.cookbook_name,
+                                        len(written_files)))
+    else:
+        print("%s up to date" % args.cookbook_name)
 
 
 def _fastfood_build(args):
@@ -154,7 +160,7 @@ def main():
     logging.basicConfig(level=args.loglevel)
 
     try:
-        print(args.func(args))
+        args.func(args)
     except Exception as err:
         traceback.print_exc()
         # todo: tracack in -v or -vv mode?
@@ -163,9 +169,6 @@ def main():
         sys.exit(1)
     except KeyboardInterrupt:
         sys.exit("\nStahp")
-    else:
-        print('success')
-        # result
 
 if __name__ == '__main__':
     main()
