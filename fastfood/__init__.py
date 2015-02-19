@@ -13,7 +13,7 @@
 # limitations under the License.
 
 __title__ = 'fastfood'
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 __license__ = 'Apache 2.0'
 __copyright__ = 'Copyright Rackspace US, Inc. (c) 2015'
 __url__ = 'https://github.com/rackerlabs/fastfood'
