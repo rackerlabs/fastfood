@@ -28,7 +28,7 @@ class TemplatePack(object):
         self._manifest = None
         self._stencil_sets = {}
         self.path = utils.normalize_path(path)
-        if not os.path.isdir(path):
+        if not os.path.isdir(self.path):
             raise ValueError("Templatepack dir %s does not exist."
                              % self.path)
         self.manifest_path = os.path.join(self.path, 'manifest.json')
