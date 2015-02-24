@@ -48,7 +48,7 @@ def build_cookbook(build_config, templatepack, cookbooks_home,
 
     if not cookbook:
         cookbook_name = cfg['name']
-        cookbook = create_new_cookbook(
+        _, cookbook = create_new_cookbook(
             cookbook_name, templatepack, cookbooks_home, force=force)
 
     for stencil in cfg['stencils']:
@@ -245,4 +245,4 @@ def create_new_cookbook(cookbook_name, templatepack,
             written_files.append(target_path)
             newfile.write(content)
 
-    return written_files
+    return (written_files, book.CookBook(os.path.join(cookbooks_home, cookbook_name)))

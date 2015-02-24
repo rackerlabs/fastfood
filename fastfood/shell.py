@@ -40,7 +40,7 @@ def _fastfood_gen(args):
 
 
 def _fastfood_new(args):
-    written_files = food.create_new_cookbook(
+    written_files, _ = food.create_new_cookbook(
         args.cookbook_name, args.template_pack, args.cookbooks)
 
     if len(written_files) > 0:
