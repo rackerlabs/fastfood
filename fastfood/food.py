@@ -53,10 +53,9 @@ def build_cookbook(build_config, templatepack, cookbooks_home,
 
     for stencil in cfg['stencils']:
         stencil_set = stencil.pop('stencil_set')
-        name = stencil.pop('name')
         # items left un-popped are **options
         update_cookbook(
-            cookbook.path, templatepack, stencil_set, name=name, **stencil)
+            cookbook.path, templatepack, stencil_set, **stencil)
     return cookbook
 
 
