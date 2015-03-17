@@ -40,8 +40,8 @@ def ruby_lines(text):
     elif not isinstance(text, list):
         raise TypeError("text should be a list or a string, not %s"
                         % type(text))
-    return [l.strip() for l in text if l.strip()
-            and not l.strip().startswith('#')]
+    return [l.strip() for l in text if l.strip() and not
+            l.strip().startswith('#')]
 
 
 def deepupdate(original, update, levels=5):
