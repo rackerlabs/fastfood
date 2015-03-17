@@ -244,4 +244,5 @@ def create_new_cookbook(cookbook_name, templatepack,
             written_files.append(target_path)
             newfile.write(content)
 
-    return (written_files, book.CookBook(os.path.join(cookbooks_home, cookbook_name)))
+    return (written_files, book.CookBook(os.path.join(cookbooks_home,
+                                                      cookbook_name)))
