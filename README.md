@@ -4,6 +4,20 @@ fastfood
 Helps build cookbooks faster by pre-templating parts and exposing
 options in a command line and config friendly way.
 
+### Installation
+The latest release of fastfood can be installed via pip:
+```
+pip install fastfood
+```
+An alternative install method would be manually installing it leveraging
+`setup.py`:
+
+```
+git clone https://github.com/rackerlabs/fastfood
+cd fastfood
+python setup.py install
+```
+
 ### Command Line Usage
 
 #### gen
