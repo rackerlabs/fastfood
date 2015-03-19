@@ -1,0 +1,4 @@
+[nosetests]
+verbosity=2
+where=tests
+where=tests/functional

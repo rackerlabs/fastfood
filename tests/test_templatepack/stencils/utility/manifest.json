@@ -1,0 +1,49 @@
+{
+  "id": "utility",
+  "api": 1,
+  "default_stencil": "empty",
+  "dependencies": {
+  },
+  "options": {
+    "name": {
+      "help": "Name of the recipe to create",
+      "default": "default"
+    },
+    "sudo": {
+      "help": "Enable nopasswd sudo for all, only applies to default recipe stencil",
+      "default": "false"
+    }
+  },
+  "stencils": {
+    "default": {
+      "dependencies": {
+        "sudo": {},
+        "users": {},
+        "rackops_rolebook": {}
+      },
+      "files": {
+        "recipes/<NAME>.rb": "recipes/default.rb",
+        "test/unit/spec/<NAME>_spec.rb": "test/unit/spec/default_spec.rb"
+      }
+    },
+    "empty": {
+      "files": {
+        "recipes/<NAME>.rb": "recipes/empty.rb",
+        "test/unit/spec/<NAME>_spec.rb": "test/unit/spec/empty_spec.rb"
+      }
+    },
+    "deploy_guard": {
+      "options": {
+        "name": {
+          "default": "_deploy_script"
+        }
+      },
+      "files": {
+        "recipes/<NAME>.rb": "recipes/deploy_guard.rb",
+        "test/unit/spec/<NAME>_spec.rb": "test/unit/spec/deploy_guard_spec.rb",
+        "files/default/deploy_app.sh": "files/default/deploy_app.sh",
+        "files/default/deploy_flag.json": "files/default/deploy_flag.json"
+      }
+    }
+  }
+}

@@ -40,7 +40,7 @@ def _fastfood_gen(args):
 
 
 def _fastfood_new(args):
-    written_files, _ = food.create_new_cookbook(
+    written_files, cookbook = food.create_new_cookbook(
         args.cookbook_name, args.template_pack, args.cookbooks)
 
     if len(written_files) > 0:
@@ -48,6 +48,8 @@ def _fastfood_new(args):
                                         len(written_files)))
     else:
         print("%s up to date" % args.cookbook_name)
+
+    return written_files, cookbook
 
 
 def _fastfood_build(args):
