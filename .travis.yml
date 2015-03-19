@@ -8,6 +8,6 @@ install:
 script:
   - pep8 fastfood
   - flake8 fastfood
-  - nosetests
+  - nosetests -c .nose
 # The following line tells Travis CI to build in a container
 sudo: false
