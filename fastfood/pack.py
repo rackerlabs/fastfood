@@ -37,6 +37,7 @@ class TemplatePack(object):
                              % os.path.relpath(self.manifest_path))
         self._validate('api', cls=int)
         self._validate('base', cls=dict)
+        self._validate('stencil_sets', cls=dict)
         # for caching Stencil instances
 
     def _validate(self, key, cls=None):
@@ -57,6 +58,8 @@ class TemplatePack(object):
 
     @property
     def stencil_sets(self):
+        if not self._stencil_sets:
+            self._stencil_sets = self.manifest['stencil_sets']
         return self._stencil_sets
 
     def __getattr__(self, stencilset_name):
