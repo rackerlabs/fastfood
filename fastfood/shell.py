@@ -26,6 +26,7 @@ import sys
 import threading
 
 from fastfood import food
+from fastfood import pack
 
 _local = threading.local()
 LOG = logging.getLogger(__name__)
@@ -57,6 +58,19 @@ def _fastfood_build(args):
     return food.build_cookbook(
         args.config_file, args.template_pack,
         args.cookbooks, cookbook_path=args.cookbook)
+
+
+def _fastfood_list(args):
+    template_pack = pack.TemplatePack(args.template_pack)
+    if args.stencil_set:
+        stencil_set = template_pack.load_stencil_set(args.stencil_set)
+        print("Available Stencils for %s:" % args.stencil_set)
+        for stencil in stencil_set.stencils:
+            print("  %s" % stencil)
+    else:
+        print('Available Stencil Sets:')
+        for name, vals in template_pack.stencil_sets.iteritems():
+            print("  %12s - %12s" % (name, vals['help']))
 
 
 def _split_key_val(option):
@@ -130,6 +144,16 @@ def main():
     gen_parser.add_argument('--force', '-f', action='store_true',
                             default=False, help="Overwrite existing files.")
     gen_parser.set_defaults(func=_fastfood_gen)
+
+    #
+    # `fastfood list`
+    #
+    list_parser = subparsers.add_parser(
+        'list', help='List available stencils',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    list_parser.add_argument('stencil_set', nargs='?',
+                             help="Stencil set to list stencils from")
+    list_parser.set_defaults(func=_fastfood_list)
 
     #
     # `fastfood new`

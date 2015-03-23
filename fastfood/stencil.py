@@ -65,6 +65,8 @@ class StencilSet(object):
 
     @property
     def stencils(self):
+        if not self._stencils:
+            self._stencils = self.manifest['stencils']
         return self._stencils
 
     def get_stencil(self, stencil_name, **options):
