@@ -68,8 +68,8 @@ setup(
         "Programming Language :: Python :: 2.7",
     ],
     license=_ff_meta['license'],
-    maintainer='samstav',
-    maintainer_email='smlstvnh@gmail.com',
+    author='Rackers',
+    maintainer_email='samuel.stavinoha@rackspace.com',
     url=_ff_meta['url'],
     entry_points={
         'console_scripts': [
