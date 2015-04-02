@@ -27,6 +27,7 @@ import threading
 
 from fastfood import food
 from fastfood import pack
+from fastfood import __version__
 
 _local = threading.local()
 LOG = logging.getLogger(__name__)
@@ -105,6 +106,8 @@ def main():
         epilog="\n".join(__doc__.splitlines()[1:]),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         )
+
+    parser.add_argument('--version', action='version', version=__version__)
 
     verbose = parser.add_mutually_exclusive_group()
     verbose.add_argument('-v', dest='loglevel', action='store_const',
