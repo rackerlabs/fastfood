@@ -10,7 +10,7 @@ CASSETTE_LIB = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), 'cassettes')
 assert os.path.isdir(CASSETTE_LIB), "Cassette library not found."
 
-RECORD_MODE = 'once'
+RECORD_MODE = 'none'
 
 
 class VCRHelper(unittest.TestCase):
