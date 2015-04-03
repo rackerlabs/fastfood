@@ -1,4 +1,5 @@
-fastfood
+
+fastfood  [![latest](https://img.shields.io/pypi/v/fastfood.svg)](https://pypi.python.org/pypi/fastfood)
 ========
 
 Helps build cookbooks faster by pre-templating parts and exposing
@@ -100,3 +101,10 @@ with Ruby code fastfood uses '|{' and '}|' to represent a jinja2 variable.
 ```
 |{ options['name'] }|
 ```
+
+
+## builds
+
+| Branch        | Status  |
+| ------------- | ------------- |
+| [master](https://github.com/rackerlabs/fastfood/tree/master)  | [![Build Status](https://travis-ci.org/rackerlabs/fastfood.svg?branch=master)](https://travis-ci.org/rackerlabs/fastfood)  |
