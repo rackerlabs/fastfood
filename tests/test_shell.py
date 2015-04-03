@@ -20,6 +20,7 @@ class TestFastfoodShell(vcrhelper.VCRHelper):
             self.assertIn('info', info)
 
     @mock.patch('sys.stderr', new_callable=StringIO.StringIO)
+    @mock.patch('fastfood.__version__', new='0.1.6')
     def test_get_latest(self, mock_stderr):
 
         with self.vcr.use_cassette('pypi_release_info.yaml'):

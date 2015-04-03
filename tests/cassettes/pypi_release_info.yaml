@@ -13,15 +13,11 @@ interactions:
       accept-ranges: [bytes]
       connection: [close]
       content-length: ['0']
-      date: <DATE-FILTERED>
       location: ['https://pypi.python.org/pypi/fastfood/json']
       retry-after: ['0']
       server: [Varnish]
       via: [1.1 varnish]
       x-cache: [MISS]
-      x-cache-hits: ['0']
-      x-served-by: [cache-ord1725-ORD]
-      x-timer: ['S1428017097.538503,VS0,VE0']
     status: {code: 301, message: Moved Permanently}
 - request:
     body: null
@@ -124,22 +120,16 @@ interactions:
     headers:
       accept-ranges: [bytes]
       access-control-allow-origin: ['*']
-      age: ['65882']
       cache-control: ['max-age=600, public']
       connection: [close]
       content-disposition: [inline]
       content-length: ['6225']
       content-type: [application/json; charset="UTF-8"]
-      date: <DATE-FILTERED>
-      public-key-pins: <PUBLIC-KEY-PINS-FILTERED>
       server: [nginx/1.6.2]
       strict-transport-security: [max-age=31536000; includeSubDomains]
       via: [1.1 varnish, 1.1 varnish]
       x-cache: ['HIT, HIT']
-      x-cache-hits: ['1, 1']
       x-clacks-overhead: [GNU Terry Pratchett]
       x-pypi-last-serial: ['1487611']
-      x-served-by: ['cache-iad2130-IAD, cache-ord1728-ORD']
-      x-timer: ['S1428017097.594636,VS0,VE0']
     status: {code: 200, message: OK}
 version: 1

@@ -10,22 +10,26 @@ CASSETTE_LIB = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), 'cassettes')
 assert os.path.isdir(CASSETTE_LIB), "Cassette library not found."
 
-RECORD_MODE = 'none'
+RECORD_MODE = 'once'
 
 
 class VCRHelper(unittest.TestCase):
 
     filter_headers = [
+        'x-cache-hits',
+        'x-served-by',
+        'x-timer',
         'user-agent',
+        'age',
         'date',
         'public-key-pins',
     ]
 
     def do_filter_headers(self, thing):
-        for key, value in thing['headers'].items():
-            if key.lower() in self.filter_headers:
-                redact = '<%s-FILTERED>' % key.upper()
-                thing['headers'][key] = redact
+        thing['headers'] = {
+            key: value for key, value in thing['headers'].items()
+            if key.lower() not in self.filter_headers
+        }
         return thing
 
     def before_record_request(self, request):
