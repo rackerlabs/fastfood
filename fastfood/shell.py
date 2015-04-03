@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2015 Rackspace US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,26 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Fastfood - cookbook wizardry.
-
-CLI Module
-"""
+"""Fastfood - cookbook wizardry."""
 
 from __future__ import print_function
-from __future__ import unicode_literals
 
+from datetime import datetime
+import json
 import logging
 import os
 import sys
 import threading
+import urllib2
 
+import fastfood
 from fastfood import food
 from fastfood import pack
-from fastfood import __version__
 
 _local = threading.local()
 LOG = logging.getLogger(__name__)
 NAMESPACE = 'fastfood'
+EXCLAIM = '\xe2\x9d\x97\xef\xb8\x8f'
+CHECK = '\xe2\x9c\x85'
 
 
 def _fastfood_gen(args):
@@ -74,6 +76,17 @@ def _fastfood_list(args):
             print("  %12s - %12s" % (name, vals['help']))
 
 
+def _release_info():
+
+    pypi_url = 'http://pypi.python.org/pypi/fastfood/json'
+    headers = {
+        'Accept': 'application/json',
+    }
+    request = urllib2.Request(pypi_url, headers=headers)
+    data = json.loads(urllib2.urlopen(request).read())
+    return data
+
+
 def _split_key_val(option):
     key_val = option.split(':', 1)
     assert len(key_val) == 2, "Bad option %s" % option
@@ -85,7 +98,7 @@ def getenv(option_name, default=None):
     return os.environ.get(env, default)
 
 
-def main():
+def main(argv=None):
     """fastfood command line interface."""
     import argparse
     import traceback
@@ -102,12 +115,41 @@ def main():
             sys.exit(2)
 
     parser = HelpfulParser(
+        prog=NAMESPACE,
         description=__doc__.splitlines()[0],
         epilog="\n".join(__doc__.splitlines()[1:]),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         )
 
-    parser.add_argument('--version', action='version', version=__version__)
+    version_string = 'version %s' % fastfood.__version__
+    parser.description = '%s ( %s )' % (parser.description, version_string)
+
+    # version_group = subparsers.add_group()
+    version_group = parser.add_argument_group(
+        title='version info',
+        description='Use these arguments to get version info.')
+
+    vers_arg = version_group.add_argument(
+        '-V', '--version', action='version',
+        help="Return the current fastfood version.",
+        version='%s %s' % (parser.prog, version_string))
+
+    class LatestVersionAction(vers_arg.__class__):
+
+        def __call__(self, prsr, *args, **kw):
+            info = _release_info()
+            vers = info['info']['version']
+            release = info['releases'][vers][0]
+            uploaded = datetime.strptime(
+                release['upload_time'], '%Y-%m-%dT%H:%M:%S')
+            sym = EXCLAIM if vers != fastfood.__version__ else CHECK
+            message = "{}  fastfood version {} uploaded {}\n"
+            message = message.format(sym, vers, uploaded.ctime())
+            prsr.exit(message=message)
+
+    version_group.add_argument(
+        '-L', '--latest', action=LatestVersionAction,
+        help="Lookup the latest relase from PyPI.")
 
     verbose = parser.add_mutually_exclusive_group()
     verbose.add_argument('-v', dest='loglevel', action='store_const',
@@ -130,6 +172,7 @@ def main():
         dest='_subparsers', title='fastfood commands',
         description='operations...',
         help='...')
+
     #
     # `fastfood gen`
     #
@@ -182,7 +225,9 @@ def main():
     build_parser.set_defaults(func=_fastfood_build)
 
     setattr(_local, 'argparser', parser)
-    args = parser.parse_args()
+    if not argv:
+        argv = None
+    args = parser.parse_args(args=argv)
     if hasattr(args, 'options'):
         args.options = {k: v for k, v in args.options}
 

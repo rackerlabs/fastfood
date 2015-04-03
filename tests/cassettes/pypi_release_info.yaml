@@ -1,0 +1,145 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: [application/json]
+      Connection: [close]
+      Host: [pypi.python.org]
+    method: GET
+    uri: http://pypi.python.org/pypi/fastfood/json
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      accept-ranges: [bytes]
+      connection: [close]
+      content-length: ['0']
+      date: <DATE-FILTERED>
+      location: ['https://pypi.python.org/pypi/fastfood/json']
+      retry-after: ['0']
+      server: [Varnish]
+      via: [1.1 varnish]
+      x-cache: [MISS]
+      x-cache-hits: ['0']
+      x-served-by: [cache-ord1725-ORD]
+      x-timer: ['S1428017097.538503,VS0,VE0']
+    status: {code: 301, message: Moved Permanently}
+- request:
+    body: null
+    headers:
+      Accept: [application/json]
+      Connection: [close]
+      Host: [pypi.python.org]
+    method: GET
+    uri: https://pypi.python.org/pypi/fastfood/json
+  response:
+    body: {string: !!python/unicode "{\n    \"info\": {\n        \"maintainer\": null,\
+        \ \n        \"docs_url\": \"\", \n        \"requires_python\": null, \n  \
+        \      \"maintainer_email\": null, \n        \"cheesecake_code_kwalitee_id\"\
+        : null, \n        \"keywords\": \"chef cookbook templates\", \n        \"\
+        package_url\": \"http://pypi.python.org/pypi/fastfood\", \n        \"author\"\
+        : \"Rackers\", \n        \"author_email\": \"samuel.stavinoha@rackspace.com\"\
+        , \n        \"download_url\": \"UNKNOWN\", \n        \"platform\": \"UNKNOWN\"\
+        , \n        \"version\": \"0.1.6\", \n        \"cheesecake_documentation_id\"\
+        : null, \n        \"_pypi_hidden\": false, \n        \"description\": \"UNKNOWN\"\
+        , \n        \"release_url\": \"http://pypi.python.org/pypi/fastfood/0.1.6\"\
+        , \n        \"downloads\": {\n            \"last_month\": 833, \n        \
+        \    \"last_week\": 272, \n            \"last_day\": 6\n        }, \n    \
+        \    \"_pypi_ordering\": 7, \n        \"classifiers\": [\n            \"Programming\
+        \ Language :: Python\", \n            \"Programming Language :: Python ::\
+        \ 2.7\"\n        ], \n        \"name\": \"fastfood\", \n        \"bugtrack_url\"\
+        : null, \n        \"license\": \"Apache 2.0\", \n        \"summary\": \"Chef\
+        \ Cookbook Wizardry\", \n        \"home_page\": \"https://github.com/rackerlabs/fastfood\"\
+        , \n        \"stable_version\": null, \n        \"cheesecake_installability_id\"\
+        : null\n    }, \n    \"releases\": {\n        \"0.0.9\": [\n            {\n\
+        \                \"has_sig\": false, \n                \"upload_time\": \"\
+        2015-02-13T23:40:11\", \n                \"comment_text\": \"\", \n      \
+        \          \"python_version\": \"source\", \n                \"url\": \"https://pypi.python.org/packages/source/f/fastfood/fastfood-0.0.9.tar.gz\"\
+        , \n                \"md5_digest\": \"bada304e7de5ee6f5a829605bcbb3975\",\
+        \ \n                \"downloads\": 124, \n                \"filename\": \"\
+        fastfood-0.0.9.tar.gz\", \n                \"packagetype\": \"sdist\", \n\
+        \                \"size\": 8675\n            }\n        ], \n        \"0.1.0\"\
+        : [\n            {\n                \"has_sig\": false, \n               \
+        \ \"upload_time\": \"2015-02-18T17:44:19\", \n                \"comment_text\"\
+        : \"\", \n                \"python_version\": \"source\", \n             \
+        \   \"url\": \"https://pypi.python.org/packages/source/f/fastfood/fastfood-0.1.0.tar.gz\"\
+        , \n                \"md5_digest\": \"a5ef857ce046abf3a30bc965ce97ce86\",\
+        \ \n                \"downloads\": 150, \n                \"filename\": \"\
+        fastfood-0.1.0.tar.gz\", \n                \"packagetype\": \"sdist\", \n\
+        \                \"size\": 8874\n            }\n        ], \n        \"0.1.1\"\
+        : [\n            {\n                \"has_sig\": false, \n               \
+        \ \"upload_time\": \"2015-02-18T19:36:12\", \n                \"comment_text\"\
+        : \"\", \n                \"python_version\": \"source\", \n             \
+        \   \"url\": \"https://pypi.python.org/packages/source/f/fastfood/fastfood-0.1.1.tar.gz\"\
+        , \n                \"md5_digest\": \"2aff8f50f86d6bb637772e20891b007c\",\
+        \ \n                \"downloads\": 150, \n                \"filename\": \"\
+        fastfood-0.1.1.tar.gz\", \n                \"packagetype\": \"sdist\", \n\
+        \                \"size\": 8898\n            }\n        ], \n        \"0.1.2\"\
+        : [\n            {\n                \"has_sig\": false, \n               \
+        \ \"upload_time\": \"2015-02-19T16:42:01\", \n                \"comment_text\"\
+        : \"\", \n                \"python_version\": \"source\", \n             \
+        \   \"url\": \"https://pypi.python.org/packages/source/f/fastfood/fastfood-0.1.2.tar.gz\"\
+        , \n                \"md5_digest\": \"2941f4acad9c88aba91f0de7d1bc05b4\",\
+        \ \n                \"downloads\": 266, \n                \"filename\": \"\
+        fastfood-0.1.2.tar.gz\", \n                \"packagetype\": \"sdist\", \n\
+        \                \"size\": 8943\n            }\n        ], \n        \"0.1.3\"\
+        : [\n            {\n                \"has_sig\": false, \n               \
+        \ \"upload_time\": \"2015-02-23T23:52:20\", \n                \"comment_text\"\
+        : \"\", \n                \"python_version\": \"source\", \n             \
+        \   \"url\": \"https://pypi.python.org/packages/source/f/fastfood/fastfood-0.1.3.tar.gz\"\
+        , \n                \"md5_digest\": \"78831783eaf88358f1f0a2b525a35e05\",\
+        \ \n                \"downloads\": 252, \n                \"filename\": \"\
+        fastfood-0.1.3.tar.gz\", \n                \"packagetype\": \"sdist\", \n\
+        \                \"size\": 8954\n            }\n        ], \n        \"0.1.4\"\
+        : [\n            {\n                \"has_sig\": false, \n               \
+        \ \"upload_time\": \"2015-02-24T04:58:26\", \n                \"comment_text\"\
+        : \"\", \n                \"python_version\": \"source\", \n             \
+        \   \"url\": \"https://pypi.python.org/packages/source/f/fastfood/fastfood-0.1.4.tar.gz\"\
+        , \n                \"md5_digest\": \"85380ed5e641d2f0e470c9ed6ca2e844\",\
+        \ \n                \"downloads\": 255, \n                \"filename\": \"\
+        fastfood-0.1.4.tar.gz\", \n                \"packagetype\": \"sdist\", \n\
+        \                \"size\": 8983\n            }\n        ], \n        \"0.1.5\"\
+        : [\n            {\n                \"has_sig\": false, \n               \
+        \ \"upload_time\": \"2015-02-25T16:11:52\", \n                \"comment_text\"\
+        : \"\", \n                \"python_version\": \"source\", \n             \
+        \   \"url\": \"https://pypi.python.org/packages/source/f/fastfood/fastfood-0.1.5.tar.gz\"\
+        , \n                \"md5_digest\": \"5a9de0e443cf3d80d5eafb9731cfccbf\",\
+        \ \n                \"downloads\": 304, \n                \"filename\": \"\
+        fastfood-0.1.5.tar.gz\", \n                \"packagetype\": \"sdist\", \n\
+        \                \"size\": 8962\n            }\n        ], \n        \"0.1.6\"\
+        : [\n            {\n                \"has_sig\": false, \n               \
+        \ \"upload_time\": \"2015-03-26T19:24:55\", \n                \"comment_text\"\
+        : \"\", \n                \"python_version\": \"source\", \n             \
+        \   \"url\": \"https://pypi.python.org/packages/source/f/fastfood/fastfood-0.1.6.tar.gz\"\
+        , \n                \"md5_digest\": \"7d04bc76fe619f4f47333ac326534573\",\
+        \ \n                \"downloads\": 184, \n                \"filename\": \"\
+        fastfood-0.1.6.tar.gz\", \n                \"packagetype\": \"sdist\", \n\
+        \                \"size\": 9180\n            }\n        ]\n    }, \n    \"\
+        urls\": [\n        {\n            \"has_sig\": false, \n            \"upload_time\"\
+        : \"2015-03-26T19:24:55\", \n            \"comment_text\": \"\", \n      \
+        \      \"python_version\": \"source\", \n            \"url\": \"https://pypi.python.org/packages/source/f/fastfood/fastfood-0.1.6.tar.gz\"\
+        , \n            \"md5_digest\": \"7d04bc76fe619f4f47333ac326534573\", \n \
+        \           \"downloads\": 184, \n            \"filename\": \"fastfood-0.1.6.tar.gz\"\
+        , \n            \"packagetype\": \"sdist\", \n            \"size\": 9180\n\
+        \        }\n    ]\n}"}
+    headers:
+      accept-ranges: [bytes]
+      access-control-allow-origin: ['*']
+      age: ['65882']
+      cache-control: ['max-age=600, public']
+      connection: [close]
+      content-disposition: [inline]
+      content-length: ['6225']
+      content-type: [application/json; charset="UTF-8"]
+      date: <DATE-FILTERED>
+      public-key-pins: <PUBLIC-KEY-PINS-FILTERED>
+      server: [nginx/1.6.2]
+      strict-transport-security: [max-age=31536000; includeSubDomains]
+      via: [1.1 varnish, 1.1 varnish]
+      x-cache: ['HIT, HIT']
+      x-cache-hits: ['1, 1']
+      x-clacks-overhead: [GNU Terry Pratchett]
+      x-pypi-last-serial: ['1487611']
+      x-served-by: ['cache-iad2130-IAD, cache-ord1728-ORD']
+      x-timer: ['S1428017097.594636,VS0,VE0']
+    status: {code: 200, message: OK}
+version: 1

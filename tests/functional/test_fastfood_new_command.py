@@ -11,6 +11,11 @@ import unittest
 from fastfood import pack
 from fastfood import shell
 
+TEST_TEMPLATEPACK = os.path.abspath(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                 os.path.pardir, 'test_templatepack'))
+assert os.path.isdir(TEST_TEMPLATEPACK), "Test templatepack not found."
+
 
 class MockArgs(object):
 
@@ -27,7 +32,7 @@ class TestFastfoodCommands(unittest.TestCase):
 
     def setUp(self):
 
-        self.templatepack_path = os.path.join(os.pardir, 'test_templatepack')
+        self.templatepack_path = TEST_TEMPLATEPACK
         self.pack = pack.TemplatePack(self.templatepack_path)
         # make a separate ref in case something modifies the instance attr
         self.cookbooks_path = self._tmpcbd = tempfile.mkdtemp(
