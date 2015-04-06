@@ -76,6 +76,19 @@ def _fastfood_list(args):
             print("  %12s - %12s" % (name, vals['help']))
 
 
+def _fastfood_show(args):
+    template_pack = pack.TemplatePack(args.template_pack)
+    if args.stencil_set:
+        stencil_set = template_pack.load_stencil_set(args.stencil_set)
+        print("Stencil Set %s:" % args.stencil_set)
+        print('  Stencils:')
+        for stencil in stencil_set.stencils:
+            print("    %s" % stencil)
+        print('  Options:')
+        for opt, vals in stencil_set.manifest['options'].iteritems():
+            print("    %s - %s" % (opt, vals['help']))
+
+
 def _release_info():
 
     pypi_url = 'http://pypi.python.org/pypi/fastfood/json'
@@ -200,6 +213,16 @@ def main(argv=None):
     list_parser.add_argument('stencil_set', nargs='?',
                              help="Stencil set to list stencils from")
     list_parser.set_defaults(func=_fastfood_list)
+
+    #
+    # `fastfood show <stencil_set>`
+    #
+    show_parser = subparsers.add_parser(
+        'show', help='Show stencil set information',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    show_parser.add_argument('stencil_set',
+                             help="Stencil set to list stencils from")
+    show_parser.set_defaults(func=_fastfood_show)
 
     #
     # `fastfood new`
