@@ -105,6 +105,8 @@ class CookBook(object):
 
 class Berksfile(object):
 
+    """Wrapper for a Berksfile."""
+
     berks_options = [
         'branch',
         'git',
@@ -175,6 +177,7 @@ class Berksfile(object):
                     datamap[key].append(utils.ruby_strip(value))
                 elif key:
                     datamap[key] = utils.ruby_strip(value)
+        self.seek(0)
         return datamap
 
     def merge(self, other):
@@ -188,7 +191,7 @@ class Berksfile(object):
         berksfile_writelines = []
         # compare and gather cookbook dependencies
         for ckbkname, meta in new.get('cookbook', {}).items():
-            if ckbkname in current.get('cookbook'):
+            if ckbkname in current.get('cookbook', {}):
                 print '%s already has %s' % (self, ckbkname)
                 continue
             line = "cookbook '%s'" % ckbkname
@@ -202,6 +205,8 @@ class Berksfile(object):
 
         # compare and gather 'source' requirements
         for source in new.get('source', []):
+            if source in current.get('source', []):
+                continue
             line = "source '%s'" % source
             berksfile_writelines.append("%s\n" % line)
         return self.write_statements(berksfile_writelines)
