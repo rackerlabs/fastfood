@@ -95,10 +95,10 @@ def update_cookbook(cookbook_path, templatepack, stencilset_name, **options):
 
     # berks dependencies
     berksfile_writelines = []
-    berksfile = cookbook.berksfile
+    berksfile_dict = cookbook.berksfile.to_dict()
     stencil_berks_deps = stencil.get('berks_dependencies', {})
     for lib, meta in stencil_berks_deps.iteritems():
-        if lib in berksfile.get('cookbook', {}):
+        if lib in berksfile_dict.get('cookbook', {}):
             continue
         elif meta and not isinstance(meta, dict):
             raise TypeError("Berksfile dependency hash for %s in %s "
@@ -157,7 +157,7 @@ def update_cookbook(cookbook_path, templatepack, stencilset_name, **options):
             metadata_writelines)
 
     if berksfile_writelines:
-        cookbook.write_berksfile_dependencies(
+        cookbook.berksfile.write_statements(
             berksfile_writelines)
 
 
