@@ -16,20 +16,12 @@
 
 import copy
 import os
+import StringIO
 
 from fastfood import utils
 
 
 class CookBook(object):
-
-    berks_options = [
-        'branch',
-        'git',
-        'path',
-        'ref',
-        'revision',
-        'tag',
-    ]
 
     def __init__(self, path):
         self.path = utils.normalize_path(path)
@@ -58,13 +50,94 @@ class CookBook(object):
             if not os.path.isfile(self.berks_path):
                 raise ValueError("No Berksfile found at %s"
                                  % self.berks_path)
-            self._berksfile = self._parse_berksfile()
+            with open(self.berks_path) as berks:
+                self._berksfile = Berksfile(berks)
         return self._berksfile
 
-    def _parse_berksfile(self):
-        assert os.path.isfile(self.berks_path), "Berksfile not found"
-        with open(self.berks_path) as berks:
-            data = utils.ruby_lines(berks.readlines())
+    def _parse_metadata(self):
+        """Open metadata.rb and generate useful map."""
+        assert os.path.isfile(self.metadata_path), "metadata.rb not found"
+        with open(self.metadata_path) as meta:
+            data = utils.ruby_lines(meta.readlines())
+        data = [tuple(j.strip() for j in line.split(None, 1))
+                for line in data]
+        depends = {}
+        for line in data:
+            if not len(line) == 2:
+                continue
+            key, value = line
+            if key == 'depends':
+                value = value.split(',')
+                lib = utils.ruby_strip(value[0])
+                detail = [utils.ruby_strip(j) for j in value[1:]]
+                depends[lib] = detail
+        data = {key: utils.ruby_strip(val) for key, val in data}
+        if depends:
+            data['depends'] = depends
+        return data
+
+    def write_metadata_dependencies(self, dependencies):
+        """Insert new 'depends' statements and return parsed metadata."""
+        if not dependencies:
+            return self.metadata
+        assert os.path.isfile(self.metadata_path), "metadata.rb not found"
+        assert isinstance(dependencies, list), "not a list"
+        with open(self.metadata_path, 'r+') as meta:
+            orig_content = meta.readlines()
+            new_content = copy.copy(orig_content)
+            for line in reversed(orig_content):
+                if line.startswith('depends'):
+                    where = orig_content.index(line) + 1
+                    break
+            else:  # they should have called it elifnobreak:
+                where = len(orig_content)
+
+            for dep in dependencies:
+                print "writing to metadata.rb : %s" % dep
+                new_content.insert(where, dep)
+            if new_content != orig_content:
+                meta.seek(0)
+                meta.writelines(new_content)
+        # reset self.metadata property
+        self._metadata = None
+        return self.metadata
+
+
+class Berksfile(object):
+
+    berks_options = [
+        'branch',
+        'git',
+        'path',
+        'ref',
+        'revision',
+        'tag',
+    ]
+
+    def __init__(self, stream):
+        """Requires a file-like object."""
+
+        self.stream = stream
+
+    @classmethod
+    def from_string(cls, contents):
+        stream = StringIO.StringIO(contents)
+        return cls(stream)
+
+    def __getattr__(self, attr):
+        try:
+            return getattr(self.stream, attr)
+        except AttributeError:
+            raise AttributeError("'Berksfile' object has no attribute '%s'"
+                                 % attr)
+
+    def to_dict(self):
+        return self.parse()
+
+    def parse(self):
+        """Return a representation of the Berksfile as a dict."""
+        self.seek(0)
+        data = utils.ruby_lines(self.readlines())
         data = [tuple(j.strip() for j in line.split(None, 1))
                 for line in data]
         datamap = {}
@@ -97,80 +170,76 @@ class CookBook(object):
                             else:
                                 datamap['cookbook'][lib][opt.strip(':')] = (
                                     utils.ruby_strip(val))
-                else:
+                elif key == 'source':
+                    datamap.setdefault(key, [])
+                    datamap[key].append(utils.ruby_strip(value))
+                elif key:
                     datamap[key] = utils.ruby_strip(value)
         return datamap
 
-    def _parse_metadata(self):
-        """Open metadata.rb and generate useful map."""
-        assert os.path.isfile(self.metadata_path), "metadata.rb not found"
-        with open(self.metadata_path) as meta:
-            data = utils.ruby_lines(meta.readlines())
-        data = [tuple(j.strip() for j in line.split(None, 1))
-                for line in data]
-        depends = {}
-        for line in data:
-            if not len(line) == 2:
+    def merge(self, other):
+        """Add requirements from 'other' Berksfile into this one."""
+        if not isinstance(other, Berksfile):
+            raise TypeError("Berksfile to merge should be a 'Berksfile' "
+                            "instance, not %s.", type(other))
+        current = self.to_dict()
+        new = other.to_dict()
+
+        berksfile_writelines = []
+        # compare and gather cookbook dependencies
+        for ckbkname, meta in new.get('cookbook', {}).items():
+            if ckbkname in current.get('cookbook'):
+                print '%s already has %s' % (self, ckbkname)
                 continue
-            key, value = line
-            if key == 'depends':
-                value = value.split(',')
-                lib = utils.ruby_strip(value[0])
-                detail = [utils.ruby_strip(j) for j in value[1:]]
-                depends[lib] = detail
-        data = {key: utils.ruby_strip(val) for key, val in data}
-        if depends:
-            data['depends'] = depends
-        return data
+            line = "cookbook '%s'" % ckbkname
+            if meta:
+                # not like the others...
+                if 'constraint' in meta:
+                    line += ", '%s'" % meta.pop('constraint')
+                for opt, spec in meta.iteritems():
+                    line += ", %s: '%s'" % (opt, spec)
+            berksfile_writelines.append("%s\n" % line)
 
-    def write_berksfile_dependencies(self, dependencies):
-        """Insert new 'cookbook' statements and return parsed berksfile."""
+        # compare and gather 'source' requirements
+        for source in new.get('source', []):
+            line = "source '%s'" % source
+            berksfile_writelines.append("%s\n" % line)
+        return self.write_statements(berksfile_writelines)
+
+    def write_statements(self, dependencies):
+        """Insert new statements."""
+        # TODO(sam): this is no longer Berksfile specific,
+        # use this for writing Metadata.rb and others
         if not dependencies:
-            return self.berksfile
-        assert os.path.isfile(self.berks_path), "Berksfile not found"
+            return self.to_dict()
         assert isinstance(dependencies, list), "not a list"
-        with open(self.berks_path, 'r+') as berks:
-            orig_content = berks.readlines()
-            new_content = copy.copy(orig_content)
-            for line in reversed(orig_content):
-                if line.startswith('cookbook'):
-                    where = orig_content.index(line) + 1
-                    break
-            else:  # they should have called it elifnobreak:
-                where = len(orig_content)
+        # ignore blanks
+        dependencies = sorted([dep for dep in dependencies if dep])
+        self.seek(0)
+        orig_content = self.readlines()
+        new_content = copy.copy(orig_content)
 
-            for dep in dependencies:
-                print "writing to Berksfile : %s" % dep
-                new_content.insert(where, dep)
-            if new_content != orig_content:
-                berks.seek(0)
-                berks.writelines(new_content)
-        # reset self.metadata property
-        self._berksfile = None
-        return self.berksfile
+        # find all the insert points for each statement
+        statements = {stmnt.split(None, 1)[0] for stmnt in dependencies}
+        inserts = {}
+        for line in reversed(orig_content):
+            if not line:
+                continue
+            if not statements:
+                break
+            for statement in statements.copy():
+                if line.startswith(statement):
+                    index = orig_content.index(line) + 1
+                    inserts[statement] = index
+                    statements.remove(statement)
 
-    def write_metadata_dependencies(self, dependencies):
-        """Insert new 'depends' statements and return parsed metadata."""
-        if not dependencies:
-            return self.metadata
-        assert os.path.isfile(self.metadata_path), "metadata.rb not found"
-        assert isinstance(dependencies, list), "not a list"
-        with open(self.metadata_path, 'r+') as meta:
-            orig_content = meta.readlines()
-            new_content = copy.copy(orig_content)
-            for line in reversed(orig_content):
-                if line.startswith('depends'):
-                    where = orig_content.index(line) + 1
-                    break
-            else:  # they should have called it elifnobreak:
-                where = len(orig_content)
+        for dep in dependencies:
+            print "writing to Berksfile : %s" % dep
+            startswith = dep.split(None, 1)[0]
+            new_content.insert(
+                inserts.get(startswith, len(new_content)), dep)
 
-            for dep in dependencies:
-                print "writing to metadata.rb : %s" % dep
-                new_content.insert(where, dep)
-            if new_content != orig_content:
-                meta.seek(0)
-                meta.writelines(new_content)
-        # reset self.metadata property
-        self._metadata = None
-        return self.metadata
+        if new_content != orig_content:
+            self.seek(0)
+            self.writelines(new_content)
+        return self.to_dict()
