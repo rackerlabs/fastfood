@@ -66,6 +66,6 @@ def render_templates_generator(*files, **template_map):
                     msg, err.lineno, filename=os.path.basename(path))
 
             result = template.render(**template_map)
-            if open(path).read().endswith('\n'):
+            if not result.endswith('\n'):
                 result += '\n'
             yield path, result
