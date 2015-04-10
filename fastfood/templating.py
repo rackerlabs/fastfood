@@ -67,5 +67,5 @@ def render_templates_generator(*files, **template_map):
 
             result = template.render(**template_map)
             if open(path).read().endswith('\n'):
-                result+='\n'
+                result += '\n'
             yield path, result
