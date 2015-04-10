@@ -13,10 +13,9 @@
 # limitations under the License.
 
 """Fastfood Chef Cookbook manager."""
+from __future__ import print_function
 
-import copy
 import os
-import StringIO
 
 from fastfood import utils
 
@@ -103,7 +102,7 @@ class CookBook(object):
         return self.metadata
 
 
-class Berksfile(object):
+class Berksfile(utils.FileWrapper):
 
     """Wrapper for a Berksfile."""
 
@@ -116,28 +115,11 @@ class Berksfile(object):
         'tag',
     ]
 
-    def __init__(self, stream):
-        """Requires a file-like object."""
-
-        self.stream = stream
-
-    @classmethod
-    def from_string(cls, contents):
-        stream = StringIO.StringIO(contents)
-        return cls(stream)
-
-    def __getattr__(self, attr):
-        try:
-            return getattr(self.stream, attr)
-        except AttributeError:
-            raise AttributeError("'Berksfile' object has no attribute '%s'"
-                                 % attr)
-
     def to_dict(self):
         return self.parse()
 
     def parse(self):
-        """Return a representation of the Berksfile as a dict."""
+        """Parse this Berksfile into a dict."""
         self.seek(0)
         data = utils.ruby_lines(self.readlines())
         data = [tuple(j.strip() for j in line.split(None, 1))
@@ -210,41 +192,9 @@ class Berksfile(object):
             line = "source '%s'" % source
             berksfile_writelines.append("%s\n" % line)
         return self.write_statements(berksfile_writelines)
+        berks_writelines.extend(["source '%s'\n" % src for src
+                                 in new.get('source', [])
+                                 if src not in current.get('source', [])])
 
-    def write_statements(self, dependencies):
-        """Insert new statements."""
-        # TODO(sam): this is no longer Berksfile specific,
-        # use this for writing Metadata.rb and others
-        if not dependencies:
-            return self.to_dict()
-        assert isinstance(dependencies, list), "not a list"
-        # ignore blanks
-        dependencies = sorted([dep for dep in dependencies if dep])
-        self.seek(0)
-        orig_content = self.readlines()
-        new_content = copy.copy(orig_content)
-
-        # find all the insert points for each statement
-        statements = {stmnt.split(None, 1)[0] for stmnt in dependencies}
-        inserts = {}
-        for line in reversed(orig_content):
-            if not line:
-                continue
-            if not statements:
-                break
-            for statement in statements.copy():
-                if line.startswith(statement):
-                    index = orig_content.index(line) + 1
-                    inserts[statement] = index
-                    statements.remove(statement)
-
-        for dep in dependencies:
-            print "writing to Berksfile : %s" % dep
-            startswith = dep.split(None, 1)[0]
-            new_content.insert(
-                inserts.get(startswith, len(new_content)), dep)
-
-        if new_content != orig_content:
-            self.seek(0)
-            self.writelines(new_content)
+        self.write_statements(berks_writelines)
         return self.to_dict()

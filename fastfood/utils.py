@@ -13,8 +13,11 @@
 # limitations under the License.
 
 """Fastfood utils."""
+from __future__ import print_function
 
+import copy
 import os
+import StringIO
 
 
 def normalize_path(path):
@@ -67,3 +70,94 @@ def deepupdate(original, update, levels=5):
                 deepupdate(original[key], val, levels=levels-1)
             else:
                 original.update({key: val})
+
+
+class FileWrapper(object):
+
+    """Helps wrap ruby files, usually.
+
+    Like metadata.rb and Berksfile.
+    """
+
+    def __init__(self, stream):
+        """Requires a file-like object."""
+
+        self.stream = stream
+
+    @classmethod
+    def from_string(cls, contents):
+        """Initialize class with a string."""
+        stream = StringIO.StringIO(contents)
+        return cls(stream)
+
+    def __str__(self):
+        """String representation of the object."""
+        return '%s(%s)' % (type(self).__name__, self.stream)
+
+    def __repr__(self):
+        """Canonical string representation of the object."""
+        return ('<%s [%r] at %s>' % (type(self).__name__,
+                                     self.stream,
+                                     hex(id(self))))
+
+    def __getattr__(self, attr):
+        try:
+            return getattr(self.stream, attr)
+        except AttributeError:
+            raise AttributeError("'%s' object has no attribute '%s'"
+                                 % (type(self).__name__, attr))
+
+    def write_statements(self, statements):
+        """Insert the statements into the file neatly.
+
+        Ex:
+
+        statements = ["good  'dog'", "good 'cat'", "bad  'rat'", "fat 'emu'"]
+
+        # stream.txt ... animals = FileWrapper(open('stream.txt'))
+        good 'cow'
+        nice 'man'
+        bad 'news'
+
+        animals.write_statements(statements)
+
+        # stream.txt
+        good 'cow'
+        good 'dog'
+        good 'cat'
+        nice 'man'
+        bad 'news'
+        bad 'rat'
+        fat 'emu'
+        """
+        self.seek(0)
+        original_content_lines = self.readlines()
+        new_content_lines = copy.copy(original_content_lines)
+        # ignore blanks and sort statements to be written
+        statements = sorted([stmnt for stmnt in statements if stmnt])
+
+        # find all the insert points for each statement
+        uniqs = {stmnt.split(None, 1)[0] for stmnt in statements}
+        insert_locations = {}
+        for line in reversed(original_content_lines):
+            if not uniqs:
+                break
+            if not line:
+                continue
+            for word in uniqs.copy():
+                if line.startswith(word):
+                    index = original_content_lines.index(line) + 1
+                    insert_locations[word] = index
+                    uniqs.remove(word)
+
+        for statement in statements:
+            print("writing to %s : %s" % (self, statement))
+            startswith = statement.split(None, 1)[0]
+            # insert new statement with similar OR at the end of the file
+            new_content_lines.insert(
+                insert_locations.get(startswith, len(new_content_lines)),
+                statement)
+
+        if new_content_lines != original_content_lines:
+            self.seek(0)
+            return self.writelines(new_content_lines)
