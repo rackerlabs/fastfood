@@ -40,8 +40,7 @@ class CookBook(object):
     def metadata(self):
         """Return dict representation of this cookbook's metadata.rb ."""
         if not self._metadata:
-            with open(self.metadata_path) as meta:
-                self._metadata = MetadataRb(meta)
+            self._metadata = MetadataRb(open(self.metadata_path, 'r+'))
         return self._metadata
 
     @property
@@ -51,8 +50,7 @@ class CookBook(object):
             if not os.path.isfile(self.berks_path):
                 raise ValueError("No Berksfile found at %s"
                                  % self.berks_path)
-            with open(self.berks_path) as berks:
-                self._berksfile = Berksfile(berks)
+            self._berksfile = Berksfile(open(self.berks_path, 'r+'))
         return self._berksfile
 
 
