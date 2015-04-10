@@ -39,7 +39,8 @@ class CookBook(object):
     def metadata(self):
         """Return dict representation of this cookbook's metadata.rb ."""
         if not self._metadata:
-            self._metadata = self._parse_metadata()
+            with open(self.metadata_path) as meta:
+                self._metadata = MetadataRb(meta)
         return self._metadata
 
     @property
@@ -53,11 +54,17 @@ class CookBook(object):
                 self._berksfile = Berksfile(berks)
         return self._berksfile
 
-    def _parse_metadata(self):
-        """Open metadata.rb and generate useful map."""
-        assert os.path.isfile(self.metadata_path), "metadata.rb not found"
-        with open(self.metadata_path) as meta:
-            data = utils.ruby_lines(meta.readlines())
+
+class MetadataRb(utils.FileWrapper):
+
+    """Wrapper for a metadata.rb file."""
+
+    def to_dict(self):
+        return self.parse()
+
+    def parse(self):
+        """Parse the metadata.rb into a dict."""
+        data = utils.ruby_lines(self.readlines())
         data = [tuple(j.strip() for j in line.split(None, 1))
                 for line in data]
         depends = {}
@@ -70,36 +77,11 @@ class CookBook(object):
                 lib = utils.ruby_strip(value[0])
                 detail = [utils.ruby_strip(j) for j in value[1:]]
                 depends[lib] = detail
-        data = {key: utils.ruby_strip(val) for key, val in data}
+        datamap = {key: utils.ruby_strip(val) for key, val in data}
         if depends:
-            data['depends'] = depends
-        return data
-
-    def write_metadata_dependencies(self, dependencies):
-        """Insert new 'depends' statements and return parsed metadata."""
-        if not dependencies:
-            return self.metadata
-        assert os.path.isfile(self.metadata_path), "metadata.rb not found"
-        assert isinstance(dependencies, list), "not a list"
-        with open(self.metadata_path, 'r+') as meta:
-            orig_content = meta.readlines()
-            new_content = copy.copy(orig_content)
-            for line in reversed(orig_content):
-                if line.startswith('depends'):
-                    where = orig_content.index(line) + 1
-                    break
-            else:  # they should have called it elifnobreak:
-                where = len(orig_content)
-
-            for dep in dependencies:
-                print "writing to metadata.rb : %s" % dep
-                new_content.insert(where, dep)
-            if new_content != orig_content:
-                meta.seek(0)
-                meta.writelines(new_content)
-        # reset self.metadata property
-        self._metadata = None
-        return self.metadata
+            datamap['depends'] = depends
+        self.seek(0)
+        return datamap
 
 
 class Berksfile(utils.FileWrapper):
