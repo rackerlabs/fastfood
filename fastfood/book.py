@@ -23,6 +23,7 @@ from fastfood import utils
 class CookBook(object):
 
     def __init__(self, path):
+        """Initialize CookBook wrapper at 'path'."""
         self.path = utils.normalize_path(path)
         self._metadata = None
         if not os.path.isdir(path):
@@ -45,7 +46,7 @@ class CookBook(object):
 
     @property
     def berksfile(self):
-        """Return dict representation of this cookbook's Berksfile."""
+        """Return this cookbook's Berksfile instance."""
         if not self._berksfile:
             if not os.path.isfile(self.berks_path):
                 raise ValueError("No Berksfile found at %s"
@@ -144,6 +145,46 @@ class Berksfile(utils.FileWrapper):
         self.seek(0)
         return datamap
 
+    @classmethod
+    def from_dict(cls, dictionary):
+        """Create a Berksfile instance from a dict."""
+        cookbooks = set()
+        sources = set()
+        other = set()
+        # put these in order
+        groups = [sources, cookbooks, other]
+
+        for key, val in dictionary.items():
+            if key == 'cookbook':
+                cookbooks.update({cls.cookbook_statement(cbn, meta)
+                                  for cbn, meta in val.items()})
+            elif key == 'source':
+                sources.update({"source '%s'" % src for src in val})
+            elif key == 'metadata':
+                other.add('metadata')
+
+        body = ''
+        for group in groups:
+            if group:
+                body += '\n'
+            body += '\n'.join(group)
+        return cls.from_string(body)
+
+    @staticmethod
+    def cookbook_statement(cookbook_name, metadata=None):
+        line = "cookbook '%s'" % cookbook_name
+        if metadata:
+            if not isinstance(metadata, dict):
+                raise TypeError("Berksfile dependency hash for %s "
+                                "should be a dict of options, not %s."
+                                % (cookbook_name, metadata))
+            # not like the others...
+            if 'constraint' in metadata:
+                line += ", '%s'" % metadata.pop('constraint')
+            for opt, spec in metadata.iteritems():
+                line += ", %s: '%s'" % (opt, spec)
+        return line
+
     def merge(self, other):
         """Add requirements from 'other' Berksfile into this one."""
         if not isinstance(other, Berksfile):
@@ -152,28 +193,12 @@ class Berksfile(utils.FileWrapper):
         current = self.to_dict()
         new = other.to_dict()
 
-        berksfile_writelines = []
         # compare and gather cookbook dependencies
-        for ckbkname, meta in new.get('cookbook', {}).items():
-            if ckbkname in current.get('cookbook', {}):
-                print '%s already has %s' % (self, ckbkname)
-                continue
-            line = "cookbook '%s'" % ckbkname
-            if meta:
-                # not like the others...
-                if 'constraint' in meta:
-                    line += ", '%s'" % meta.pop('constraint')
-                for opt, spec in meta.iteritems():
-                    line += ", %s: '%s'" % (opt, spec)
-            berksfile_writelines.append("%s\n" % line)
+        berks_writelines = ['%s\n' % self.cookbook_statement(cbn, meta)
+                            for cbn, meta in new.get('cookbook', {}).items()
+                            if cbn not in current.get('cookbook', {})]
 
         # compare and gather 'source' requirements
-        for source in new.get('source', []):
-            if source in current.get('source', []):
-                continue
-            line = "source '%s'" % source
-            berksfile_writelines.append("%s\n" % line)
-        return self.write_statements(berksfile_writelines)
         berks_writelines.extend(["source '%s'\n" % src for src
                                  in new.get('source', [])
                                  if src not in current.get('source', [])])
