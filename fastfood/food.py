@@ -64,7 +64,7 @@ def update_cookbook(cookbook_path, templatepack, stencilset_name, **options):
     force = options.get('force', False)
     tmppack = pack.TemplatePack(templatepack)
     cookbook = book.CookBook(cookbook_path)
-    existing_deps = cookbook.metadata.get('depends', {}).keys()
+    existing_deps = cookbook.metadata.to_dict().get('depends', {}).keys()
     stencilset = tmppack.load_stencil_set(stencilset_name)
 
     if 'stencil' not in options:
@@ -93,27 +93,6 @@ def update_cookbook(cookbook_path, templatepack, stencilset_name, **options):
                 line = "%s '%s'" % (line, "', '".join(meta))
             metadata_writelines.append("%s\n" % line)
 
-    # berks dependencies
-    berksfile_writelines = []
-    berksfile_dict = cookbook.berksfile.to_dict()
-    stencil_berks_deps = stencil.get('berks_dependencies', {})
-    for lib, meta in stencil_berks_deps.iteritems():
-        if lib in berksfile_dict.get('cookbook', {}):
-            continue
-        elif meta and not isinstance(meta, dict):
-            raise TypeError("Berksfile dependency hash for %s in %s "
-                            "should be a dict of options, not %s."
-                            % (lib, stencilset.manifest_path, type(meta)))
-        else:
-            line = "cookbook '%s'" % lib
-            if meta:
-                # not like the others...
-                if 'constraint' in meta:
-                    line += ", '%s'" % meta.pop('constraint')
-                for opt, spec in meta.iteritems():
-                    line += ", %s: '%s'" % (opt, spec)
-            berksfile_writelines.append("%s\n" % line)
-
     files = {
         # files.keys() are template paths, files.values() are target paths
         # {path to template: rendered target path, ... }
@@ -123,7 +102,7 @@ def update_cookbook(cookbook_path, templatepack, stencilset_name, **options):
 
     template_map = {
         'options': stencil['options'],
-        'cookbook': cookbook.metadata.copy(),
+        'cookbook': cookbook.metadata.to_dict().copy(),
     }
     template_map['cookbook']['year'] = datetime.datetime.now().year
     filetable = templating.render_templates(
@@ -153,12 +132,11 @@ def update_cookbook(cookbook_path, templatepack, stencilset_name, **options):
             newfile.write(content)
 
     if metadata_writelines:
-        cookbook.write_metadata_dependencies(
-            metadata_writelines)
+        cookbook.metadata.write_statements(metadata_writelines)
 
-    if berksfile_writelines:
-        cookbook.berksfile.write_statements(
-            berksfile_writelines)
+    stencil_berks_deps = stencil.get('berks_dependencies', {})
+    stencil_berks = book.Berksfile.from_dict(stencil_berks_deps)
+    cookbook.berksfile.merge(stencil_berks)
 
 
 def create_new_cookbook(cookbook_name, templatepack,
