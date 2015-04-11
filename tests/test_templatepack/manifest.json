@@ -4,6 +4,9 @@
   "stencil_sets": {
     "utility": {
       "help": "Creates some helpful utility recipes"
+    },
+    "newrelic": {
+      "help": "Creates a newrelic recipe"
     }
   },
   "base": {
