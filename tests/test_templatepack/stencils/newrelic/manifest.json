@@ -1,0 +1,26 @@
+{
+  "id": "newrelic",
+  "api": 1,
+  "default_stencil": "default",
+  "dependencies": {
+    "newrelic": {}
+  },
+  "options": {
+    "name": {
+      "help": "Name of the recipe to create",
+      "default": "newrelic"
+    },
+    "databag": {
+      "help": "Databag name with the newrelic item",
+      "default": "secrets"
+    }
+  },
+  "stencils": {
+    "default": {
+      "files": {
+        "recipes/<NAME>.rb": "recipes/default.rb",
+        "test/unit/spec/<NAME>_spec.rb": "test/unit/spec/default_spec.rb"
+      }
+    }
+  }
+}
