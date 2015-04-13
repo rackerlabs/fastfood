@@ -1,62 +1,16 @@
 """Functional tests for command line use."""
 
-import errno
 import os
 import random
-import shutil
 import string
-import tempfile
 import unittest
 
-from fastfood import pack
 from fastfood import shell
 
-TEST_TEMPLATEPACK = os.path.abspath(
-    os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                 os.path.pardir, 'test_templatepack'))
-assert os.path.isdir(TEST_TEMPLATEPACK), "Test templatepack not found."
+import test_commands
 
 
-class MockArgs(object):
-
-    def __init__(self, **args):
-        self._args = args
-        for key, value in args.iteritems():
-            setattr(self, key, value)
-
-    def __repr__(self):
-        return repr(self._args)
-
-
-class TestFastfoodCommands(unittest.TestCase):
-
-    def setUp(self):
-
-        self.templatepack_path = TEST_TEMPLATEPACK
-        self.pack = pack.TemplatePack(self.templatepack_path)
-        # make a separate ref in case something modifies the instance attr
-        self.cookbooks_path = self._tmpcbd = tempfile.mkdtemp(
-            prefix='%s.' % __file__, suffix='.cookbooks_dir')
-        cli_args = {
-            'template_pack': self.templatepack_path,
-            'cookbooks': self.cookbooks_path,
-            'cookbook': None,
-            'cookbook_name': None,
-            'force': None,
-            'options': None,  # stencil options
-            'config_file': None,  # for `fastfood build`
-        }
-        self.args = MockArgs(**cli_args)
-
-    def tearDown(self):
-        try:
-            shutil.rmtree(self._tmpcbd)
-        except OSError as exc:
-            if exc.errno != errno.ENOENT:
-                raise
-
-
-class TestFastfoodNewCommand(TestFastfoodCommands):
+class TestFastfoodNewCommand(test_commands.TestFastfoodCommands):
 
     def test_fastfood_new(self):
 
