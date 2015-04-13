@@ -37,6 +37,14 @@ class CookBook(object):
         self.berks_path = os.path.join(self.path, 'Berksfile')
 
     @property
+    def name(self):
+        try:
+            return self.metadata.to_dict()['name']
+        except KeyError:
+            raise LookupError("%s is missing 'name' attribute'."
+                              % self.metadata)
+
+    @property
     def metadata(self):
         """Return dict representation of this cookbook's metadata.rb ."""
         if not self._metadata:
@@ -57,6 +65,37 @@ class CookBook(object):
 class MetadataRb(utils.FileWrapper):
 
     """Wrapper for a metadata.rb file."""
+
+    @classmethod
+    def from_dict(cls, dictionary):
+        """Create a MetadataRb instance from a dict."""
+        cookbooks = set()
+        # put these in order
+        groups = [cookbooks]
+
+        for key, val in dictionary.items():
+            if key == 'depends':
+                cookbooks.update({cls.depends_statement(cbn, meta)
+                                  for cbn, meta in val.items()})
+
+        body = ''
+        for group in groups:
+            if group:
+                body += '\n'
+            body += '\n'.join(group)
+        return cls.from_string(body)
+
+    @staticmethod
+    def depends_statement(cookbook_name, metadata=None):
+        line = "depends '%s'" % cookbook_name
+        if metadata:
+            if not isinstance(metadata, dict):
+                raise TypeError("Stencil dependency options for %s "
+                                "should be a dict of options, not %s."
+                                % (cookbook_name, metadata))
+            if metadata:
+                line = "%s '%s'" % (line, "', '".join(metadata))
+        return line
 
     def to_dict(self):
         return self.parse()
@@ -81,6 +120,22 @@ class MetadataRb(utils.FileWrapper):
             datamap['depends'] = depends
         self.seek(0)
         return datamap
+
+    def merge(self, other):
+        """Add requirements from 'other' Berksfile into this one."""
+        if not isinstance(other, MetadataRb):
+            raise TypeError("MetadataRb to merge should be a 'MetadataRb' "
+                            "instance, not %s.", type(other))
+        current = self.to_dict()
+        new = other.to_dict()
+
+        # compare and gather cookbook dependencies
+        meta_writelines = ['%s\n' % self.depends_statement(cbn, meta)
+                           for cbn, meta in new.get('depends', {}).items()
+                           if cbn not in current.get('depends', {})]
+
+        self.write_statements(meta_writelines)
+        return self.to_dict()
 
 
 class Berksfile(utils.FileWrapper):
