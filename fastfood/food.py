@@ -33,6 +33,11 @@ LOG = logging.getLogger(__name__)
 
 def build_cookbook(build_config, templatepack, cookbooks_home,
                    cookbook_path=None, force=False):
+    """Build a cookbook from a fastfood.json file.
+
+    Can build on an existing cookbook, otherwise this will
+    create a new cookbook for you based on your templatepack.
+    """
 
     with open(build_config) as cfg:
         cfg = json.load(cfg)
@@ -72,7 +77,6 @@ def update_cookbook(cookbook, templatepack, stencilset_name, **options):
 
     force = options.get('force', False)
     tmppack = pack.TemplatePack(templatepack)
-    existing_deps = cookbook.metadata.to_dict().get('depends', {}).keys()
     stencilset = tmppack.load_stencil_set(stencilset_name)
 
     if 'stencil' not in options:

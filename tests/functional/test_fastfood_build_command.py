@@ -29,6 +29,7 @@ BUILD_CONFIG = """
 }
 """.strip()
 
+
 class TestFastfoodNewCommand(test_commands.TestFastfoodCommands):
 
     def test_fastfood_build_from_scratch(self):

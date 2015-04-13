@@ -26,6 +26,7 @@ import threading
 import urllib2
 
 import fastfood
+from fastfood import book
 from fastfood import food
 from fastfood import pack
 
