@@ -26,6 +26,7 @@ import threading
 import urllib2
 
 import fastfood
+from fastfood import book
 from fastfood import food
 from fastfood import pack
 
@@ -38,8 +39,9 @@ CHECK = '\xe2\x9c\x85'
 
 def _fastfood_gen(args):
 
+    cookbook = book.CookBook(args.cookbook)
     return food.update_cookbook(
-        args.cookbook, args.template_pack, args.stencil_set,
+        cookbook, args.template_pack, args.stencil_set,
         force=args.force, **args.options)
 
 
@@ -58,9 +60,17 @@ def _fastfood_new(args):
 
 def _fastfood_build(args):
 
-    return food.build_cookbook(
+    written_files, cookbook = food.build_cookbook(
         args.config_file, args.template_pack,
         args.cookbooks, cookbook_path=args.cookbook)
+
+    if len(written_files) > 0:
+        print("%s: %s files written" % (cookbook,
+                                        len(written_files)))
+    else:
+        print("%s up to date" % cookbook)
+
+    return written_files, cookbook
 
 
 def _fastfood_list(args):

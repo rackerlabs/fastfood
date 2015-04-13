@@ -33,6 +33,11 @@ LOG = logging.getLogger(__name__)
 
 def build_cookbook(build_config, templatepack, cookbooks_home,
                    cookbook_path=None, force=False):
+    """Build a cookbook from a fastfood.json file.
+
+    Can build on an existing cookbook, otherwise this will
+    create a new cookbook for you based on your templatepack.
+    """
 
     with open(build_config) as cfg:
         cfg = json.load(cfg)
@@ -46,73 +51,43 @@ def build_cookbook(build_config, templatepack, cookbooks_home,
             # create a new one please
             pass
 
+    written_files = []
     if not cookbook:
         cookbook_name = cfg['name']
-        _, cookbook = create_new_cookbook(
+        files, cookbook = create_new_cookbook(
             cookbook_name, templatepack, cookbooks_home, force=force)
+        written_files.extend(files)
 
     for stencil in cfg['stencils']:
         stencil_set = stencil.pop('stencil_set')
         # items left un-popped are **options
-        update_cookbook(
-            cookbook.path, templatepack, stencil_set, **stencil)
-    return cookbook
+        files, updated_cookbook = update_cookbook(
+            cookbook, templatepack, stencil_set, **stencil)
+        written_files.extend(files)
+        assert updated_cookbook is cookbook
+    return written_files, cookbook
 
 
-def update_cookbook(cookbook_path, templatepack, stencilset_name, **options):
+def update_cookbook(cookbook, templatepack, stencilset_name, **options):
+    """Update the cookbook with the stencil + options.
+
+    The stencil named 'stencilset_name' should
+    be one of templatepack's stencils.
+    """
 
     force = options.get('force', False)
     tmppack = pack.TemplatePack(templatepack)
-    cookbook = book.CookBook(cookbook_path)
-    existing_deps = cookbook.metadata.get('depends', {}).keys()
     stencilset = tmppack.load_stencil_set(stencilset_name)
 
     if 'stencil' not in options:
         selected_stencil = stencilset.manifest.get('default_stencil')
     else:
         selected_stencil = options['stencil']
+
     if not selected_stencil:
         raise ValueError("No %s stencil specified." % stencilset_name)
 
     stencil = stencilset.get_stencil(selected_stencil, **options)
-
-    stencil_deps = stencil.get('dependencies', {})
-
-    # metadata dependencies
-    metadata_writelines = []
-    for lib, meta in stencil_deps.iteritems():
-        if lib in existing_deps:
-            continue
-        elif meta and not isinstance(meta, list):
-            raise TypeError("Stencil dependency metadata for %s in %s "
-                            "should be an array of options, not %s."
-                            % (lib, stencilset.manifest_path, type(meta)))
-        else:
-            line = "depends '%s'" % lib
-            if meta:
-                line = "%s '%s'" % (line, "', '".join(meta))
-            metadata_writelines.append("%s\n" % line)
-
-    # berks dependencies
-    berksfile_writelines = []
-    berksfile_dict = cookbook.berksfile.to_dict()
-    stencil_berks_deps = stencil.get('berks_dependencies', {})
-    for lib, meta in stencil_berks_deps.iteritems():
-        if lib in berksfile_dict.get('cookbook', {}):
-            continue
-        elif meta and not isinstance(meta, dict):
-            raise TypeError("Berksfile dependency hash for %s in %s "
-                            "should be a dict of options, not %s."
-                            % (lib, stencilset.manifest_path, type(meta)))
-        else:
-            line = "cookbook '%s'" % lib
-            if meta:
-                # not like the others...
-                if 'constraint' in meta:
-                    line += ", '%s'" % meta.pop('constraint')
-                for opt, spec in meta.iteritems():
-                    line += ", %s: '%s'" % (opt, spec)
-            berksfile_writelines.append("%s\n" % line)
 
     files = {
         # files.keys() are template paths, files.values() are target paths
@@ -123,11 +98,12 @@ def update_cookbook(cookbook_path, templatepack, stencilset_name, **options):
 
     template_map = {
         'options': stencil['options'],
-        'cookbook': cookbook.metadata.copy(),
+        'cookbook': cookbook.metadata.to_dict().copy(),
     }
+
     template_map['cookbook']['year'] = datetime.datetime.now().year
-    filetable = templating.render_templates(
-        *files.keys(), **template_map)
+    filetable = templating.render_templates(*files.keys(), **template_map)
+    written_files = []
     for tpl_path, content in filetable:
         target_path = files[tpl_path]
         needdir = os.path.dirname(target_path)
@@ -151,14 +127,18 @@ def update_cookbook(cookbook_path, templatepack, stencilset_name, **options):
             print("Writing rendered file %s" % target_path)
             LOG.info("Writing rendered file %s", target_path)
             newfile.write(content)
+            written_files.append(target_path)
 
-    if metadata_writelines:
-        cookbook.write_metadata_dependencies(
-            metadata_writelines)
+    # merge metadata.rb dependencies
+    stencil_metadata_deps = {'depends': stencil.get('dependencies', {})}
+    stencil_metadata = book.MetadataRb.from_dict(stencil_metadata_deps)
+    cookbook.metadata.merge(stencil_metadata)
 
-    if berksfile_writelines:
-        cookbook.berksfile.write_statements(
-            berksfile_writelines)
+    # merge Berksfile dependencies
+    stencil_berks_deps = {'cookbook': stencil.get('berks_dependencies', {})}
+    stencil_berks = book.Berksfile.from_dict(stencil_berks_deps)
+    cookbook.berksfile.merge(stencil_berks)
+    return written_files, cookbook
 
 
 def create_new_cookbook(cookbook_name, templatepack,
@@ -168,9 +148,6 @@ def create_new_cookbook(cookbook_name, templatepack,
     :param cookbook_name: Name of the new cookbook.
     :param templatepack: Path to templatepack.
     :param cookbooks_home: Target dir for new cookbook.
-
-    TODO:
-        return something, like files added or path to new cookbook or both
     """
     cookbooks_home = utils.normalize_path(cookbooks_home)
 
