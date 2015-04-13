@@ -1,0 +1,29 @@
+{
+  "id": "nodejs",
+  "api": 1,
+  "default_stencil": "nodejs",
+  "dependencies": {
+    "nodejs": {}
+  },
+  "berks_dependencies": {
+    "nodejs": {
+      "git": "https://github.com/erulabs/nodejs"
+    }
+  },
+  "options": {
+    "name": {
+      "help": "Name of the recipe to create",
+      "default": "_nodejs"
+    }
+  },
+  "stencils": {
+    "nodejs": {
+      "files": {
+        "recipes/<NAME>.rb": "recipes/_nodejs.rb",
+        "test/integration/default/serverspec/<NAME>_spec.rb": "test/integration/default/serverspec/nodejs_spec.rb"
+      },
+      "options": {
+      }
+    }
+  }
+}
