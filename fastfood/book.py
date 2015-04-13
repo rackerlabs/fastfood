@@ -156,6 +156,7 @@ class Berksfile(utils.FileWrapper):
 
     def parse(self):
         """Parse this Berksfile into a dict."""
+        self.flush()
         self.seek(0)
         data = utils.ruby_lines(self.readlines())
         data = [tuple(j.strip() for j in line.split(None, 1))

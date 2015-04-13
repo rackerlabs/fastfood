@@ -160,4 +160,5 @@ class FileWrapper(object):
 
         if new_content_lines != original_content_lines:
             self.seek(0)
-            return self.writelines(new_content_lines)
+            self.writelines(new_content_lines)
+            self.flush()
