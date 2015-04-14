@@ -17,6 +17,7 @@
 import json
 import os
 
+from fastfood import exc
 from fastfood import stencil as stencil_module
 from fastfood import utils
 
@@ -26,6 +27,7 @@ class TemplatePack(object):
     def __init__(self, path):
         """Initialize, asserting templatepack path and manifest."""
         self._manifest = None
+        # for caching Stencil instances
         self._stencil_sets = {}
         self.path = utils.normalize_path(path)
         if not os.path.isdir(self.path):
@@ -38,7 +40,6 @@ class TemplatePack(object):
         self._validate('api', cls=int)
         self._validate('base', cls=dict)
         self._validate('stencil_sets', cls=dict)
-        # for caching Stencil instances
 
     def _validate(self, key, cls=None):
         if key not in self.manifest:
@@ -64,20 +65,29 @@ class TemplatePack(object):
 
     def __getattr__(self, stencilset_name):
         """Shortcut to self.load_stencil_set()."""
-        return self.load_stencil_set(stencilset_name)
+        try:
+            set_ = self.load_stencil_set(stencilset_name)
+        # any other errors are not expected so let them raise
+        except (exc.FastfoodStencilSetInvalidPath,
+                exc.FastfoodStencilSetNotListed,
+                exc.FastfoodStencilSetMissingManifest) as err:
+            attrerr = exc.FastfoodTemplatePackAttributeError(
+                "'%s' has no attribute '%s'"
+                % (type(self).__name__, stencilset_name))
+            attrerr.fastfood_err = err
+            raise attrerr
+        else:
+            return set_
 
     def load_stencil_set(self, stencilset_name):
         """Return the Stencil Set from this template pack."""
         if stencilset_name not in self._stencil_sets:
             if stencilset_name not in self.manifest['stencil_sets'].keys():
-                raise AttributeError("Stencil set '%s' not listed in %s under "
-                                     "stencil_sets."
-                                     % (stencilset_name, self.manifest_path))
+                raise exc.FastfoodStencilSetNotListed(
+                    "Stencil set '%s' not listed in %s under stencil_sets."
+                    % (stencilset_name, self.manifest_path))
             stencil_path = os.path.join(
                 self.path, 'stencils', stencilset_name)
-            try:
-                self._stencil_sets[stencilset_name] = (
-                    stencil_module.StencilSet(stencil_path))
-            except ValueError as err:
-                raise AttributeError(err.message)
+            self._stencil_sets[stencilset_name] = (
+                stencil_module.StencilSet(stencil_path))
         return self._stencil_sets[stencilset_name]
