@@ -27,6 +27,7 @@ import urllib2
 
 import fastfood
 from fastfood import book
+from fastfood import exc
 from fastfood import food
 from fastfood import pack
 
@@ -35,6 +36,9 @@ LOG = logging.getLogger(__name__)
 NAMESPACE = 'fastfood'
 EXCLAIM = '\xe2\x9d\x97\xef\xb8\x8f'
 CHECK = '\xe2\x9c\x85'
+PIZZA = '\xf0\x9f\x8d\x95'
+INTERROBANG = '\xe2\x81\x89\xef\xb8\x8f'
+RED_X = '\xe2\x9d\x8c'
 
 
 def _fastfood_gen(args):
@@ -268,10 +272,18 @@ def main(argv=None):
 
     try:
         args.func(args)
+    except exc.FastfoodError as err:
+        title = exc.get_friendly_title(err)
+        print('%s  %s: %s' % (RED_X, title, err.message),
+              file=sys.stderr)
+        sys.stderr.flush()
+        sys.exit(1)
     except Exception as err:
+        print('%s  Unexpected error. Please report this traceback.'
+              % INTERROBANG,
+              file=sys.stderr)
         traceback.print_exc()
         # todo: tracack in -v or -vv mode?
-        sys.stderr.write("%s\n" % repr(err))
         sys.stderr.flush()
         sys.exit(1)
     except KeyboardInterrupt:
