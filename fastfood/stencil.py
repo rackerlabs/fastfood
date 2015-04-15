@@ -18,6 +18,7 @@ import copy
 import json
 import os
 
+from fastfood import exc
 from fastfood import utils
 
 
@@ -30,11 +31,13 @@ class StencilSet(object):
 
         self.path = utils.normalize_path(path)
         if not os.path.isdir(path):
-            raise ValueError("Stencil Set dir %s does not exist." % path)
+            raise exc.FastfoodStencilSetInvalidPath(
+                "Stencil Set dir %s does not exist." % path)
         self.manifest_path = os.path.join(self.path, 'manifest.json')
         if not os.path.isfile(self.manifest_path):
-            raise ValueError("Stencil Set needs manifest file, %s"
-                             % self.manifest_path)
+            raise exc.FastfoodStencilSetMissingManifest(
+                "Stencil Set needs manifest file, %s"
+                % self.manifest_path)
         self._validate('api', cls=int)
         self._validate('default_stencil', cls=basestring)
 
