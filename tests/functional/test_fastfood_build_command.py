@@ -2,6 +2,8 @@
 
 import tempfile
 import unittest
+import os
+from datetime import date
 
 from fastfood import shell
 
@@ -11,6 +13,9 @@ BUILD_CONFIG = """
 {
   "name": "test_build_cookbook",
   "stencils": [
+    {
+        "stencil_set": "base"
+    },
     {
       "stencil_set": "utility",
       "stencil": "default",
@@ -30,7 +35,7 @@ BUILD_CONFIG = """
 """.strip()
 
 
-class TestFastfoodNewCommand(test_commands.TestFastfoodCommands):
+class TestFastfoodBuildCommand(test_commands.TestFastfoodCommands):
 
     def test_fastfood_build_from_scratch(self):
 
@@ -40,8 +45,16 @@ class TestFastfoodNewCommand(test_commands.TestFastfoodCommands):
 
         self.args.config_file = build_config_file.name
         _, cookbook = shell._fastfood_build(self.args)
+
         self.assertEqual(cookbook.name, 'test_build_cookbook')
+        self.assertTrue(os.path.isdir(cookbook.path))
+
         metadata = cookbook.metadata.to_dict()
+
+        # ensure name is passed from fastfood.json to cookbook name
+        self.assertIn('test_build_cookbook', metadata['name'])
+        self.assertIn('test_build_cookbook', cookbook.path)
+
         self.assertIn('sudo', metadata['depends'])
         self.assertIn('users', metadata['depends'])
         self.assertIn('rackops_rolebook', metadata['depends'])
@@ -49,8 +62,23 @@ class TestFastfoodNewCommand(test_commands.TestFastfoodCommands):
         self.assertIn('newrelic', metadata['depends'])
         self.assertIn('rackspace_iptables', metadata['depends'])
         self.assertIn('ulimit', metadata['depends'])
+
         berks = cookbook.berksfile.to_dict()
         self.assertIn('nodejs', berks['cookbook'])
+
+        # verify .kitchen.yml got the cookbook name correct
+        kitchen_yml = os.path.join(cookbook.path, '.kitchen.yml')
+        self.assertFileContains(kitchen_yml, 'test_build_cookbook::default')
+
+        default_rb = os.path.join(cookbook.path, 'recipes', 'default.rb')
+        current_year = date.today().year
+        self.assertFileContains(default_rb,
+                                '# Cookbook Name:: test_build_cookbook')
+        self.assertFileContains(default_rb,
+                                ('# Copyright %s') % str(current_year))
+
+        newrelic_rb = os.path.join(cookbook.path, 'recipes', 'newrelic.rb')
+        self.assertTrue(os.path.isfile(newrelic_rb))
 
 if __name__ == '__main__':
     unittest.main()

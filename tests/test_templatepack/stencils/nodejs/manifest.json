@@ -7,7 +7,7 @@
   },
   "berks_dependencies": {
     "nodejs": {
-      "git": "https://github.com/erulabs/nodejs"
+      "git": "https://github.com/rackerlabs/nodejs"
     }
   },
   "options": {

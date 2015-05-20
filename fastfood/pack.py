@@ -38,7 +38,6 @@ class TemplatePack(object):
             raise ValueError("Templatepack needs manifest file, %s"
                              % os.path.relpath(self.manifest_path))
         self._validate('api', cls=int)
-        self._validate('base', cls=dict)
         self._validate('stencil_sets', cls=dict)
 
     def _validate(self, key, cls=None):

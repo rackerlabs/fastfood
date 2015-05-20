@@ -29,12 +29,7 @@ class CookBook(object):
         if not os.path.isdir(path):
             raise ValueError("Cookbook dir %s does not exist."
                              % self.path)
-        self.metadata_path = os.path.join(self.path, 'metadata.rb')
-        if not os.path.isfile(self.metadata_path):
-            raise ValueError("Cookbook needs metadata.rb, %s"
-                             % self.metadata_path)
         self._berksfile = None
-        self.berks_path = os.path.join(self.path, 'Berksfile')
 
     @property
     def name(self):
@@ -47,13 +42,20 @@ class CookBook(object):
     @property
     def metadata(self):
         """Return dict representation of this cookbook's metadata.rb ."""
+        self.metadata_path = os.path.join(self.path, 'metadata.rb')
+        if not os.path.isfile(self.metadata_path):
+            raise ValueError("Cookbook needs metadata.rb, %s"
+                             % self.metadata_path)
+
         if not self._metadata:
             self._metadata = MetadataRb(open(self.metadata_path, 'r+'))
+
         return self._metadata
 
     @property
     def berksfile(self):
         """Return this cookbook's Berksfile instance."""
+        self.berks_path = os.path.join(self.path, 'Berksfile')
         if not self._berksfile:
             if not os.path.isfile(self.berks_path):
                 raise ValueError("No Berksfile found at %s"
@@ -122,7 +124,7 @@ class MetadataRb(utils.FileWrapper):
         return datamap
 
     def merge(self, other):
-        """Add requirements from 'other' Berksfile into this one."""
+        """Add requirements from 'other' metadata.rb into this one."""
         if not isinstance(other, MetadataRb):
             raise TypeError("MetadataRb to merge should be a 'MetadataRb' "
                             "instance, not %s.", type(other))

@@ -2,6 +2,9 @@
   "api": 1,
   "framework": "chef",
   "stencil_sets": {
+    "base": {
+      "help": "Creates the base cookbook files"
+    },
     "utility": {
       "help": "Creates some helpful utility recipes"
     },
@@ -14,37 +17,5 @@
     "nodejs": {
       "help": "Installs NodeJS and provides an NPM LWRP"
     }
-  },
-  "base": {
-    "files": [
-      ".gitignore",
-      ".kitchen.yml",
-      "Berksfile",
-      "CHANGELOG.md",
-      "Gemfile",
-      "fastfood.json",
-      "metadata.rb",
-      "Rakefile",
-      "README.md",
-      "recipes/default.rb",
-      "test/unit/spec/default_spec.rb",
-      "test/unit/spec/spec_helper.rb",
-      "test/integration/encrypted_data_bag_secret",
-      "test/integration/default/serverspec/spec_helper.rb",
-      "test/integration/default/serverspec/default_spec.rb"
-
-    ],
-    "directories": [
-      "attributes",
-      "files",
-      "libraries",
-      "providers",
-      "recipes",
-      "resources",
-      "templates",
-      "test/unit/spec",
-      "test/integration/data_bags",
-      "test/integration/default/serverspec"
-    ]
   }
 }
