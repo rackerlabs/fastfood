@@ -23,7 +23,8 @@
         "test/unit/spec/spec_helper.rb": "test/unit/spec/spec_helper.rb",
         "test/integration/encrypted_data_bag_secret": "test/integration/encrypted_data_bag_secret",
         "test/integration/default/serverspec/spec_helper.rb": "test/integration/default/serverspec/spec_helper.rb",
-        "test/integration/default/serverspec/default_spec.rb": "test/integration/default/serverspec/default_spec.rb"
+        "test/integration/default/serverspec/default_spec.rb": "test/integration/default/serverspec/default_spec.rb",
+        "multiple_stencils.txt": "files/multiple_stencils.txt"
       },
       "options": {
       }

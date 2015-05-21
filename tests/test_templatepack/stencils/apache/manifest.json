@@ -19,7 +19,11 @@
         "templates/default/apache/apache2.conf.erb": "templates/default/apache2.conf.erb",
         "templates/default/apache/mpm_event.conf.erb": "templates/default/mpm_event.conf.erb",
         "templates/default/apache/ports.conf.erb": "templates/default/ports.conf.erb",
-        "test/integration/default/serverspec/<NAME>_spec.rb": "test/integration/default/serverspec/apache_spec.rb"
+        "test/integration/default/serverspec/<NAME>_spec.rb": "test/integration/default/serverspec/apache_spec.rb",
+        "multiple_stencils.txt": "multiple_stencils.txt"
+      },
+      "partials": {
+        ".kitchen.yml": ".kitchen.yml.jinja2"
       },
       "options": {
       }

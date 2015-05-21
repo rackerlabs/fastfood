@@ -1,0 +1,4 @@
+
+  - name: apache
+    run_list:
+      - recipe[|{ cookbook['name'] }|::|{ options['name'] }|]
