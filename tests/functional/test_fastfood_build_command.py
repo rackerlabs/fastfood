@@ -70,6 +70,9 @@ class TestFastfoodBuildCommand(test_commands.TestFastfoodCommands):
         kitchen_yml = os.path.join(cookbook.path, '.kitchen.yml')
         self.assertFileContains(kitchen_yml, 'test_build_cookbook::default')
 
+        # it should also contain a partial template from the apache stencil
+        self.assertFileContains(kitchen_yml, 'test_build_cookbook::_apache')
+
         default_rb = os.path.join(cookbook.path, 'recipes', 'default.rb')
         current_year = date.today().year
         self.assertFileContains(default_rb,
@@ -79,6 +82,12 @@ class TestFastfoodBuildCommand(test_commands.TestFastfoodCommands):
 
         newrelic_rb = os.path.join(cookbook.path, 'recipes', 'newrelic.rb')
         self.assertTrue(os.path.isfile(newrelic_rb))
+
+        # verify that multiple_stencils.txt was overwritten with last stencil
+        # that appeared in ordered array in tests/functional/fastfood.json
+        multiple_stencils_txt = os.path.join(cookbook.path,
+                                             'multiple_stencils.txt')
+        self.assertFileContains(multiple_stencils_txt, 'apache stencil')
 
 if __name__ == '__main__':
     unittest.main()

@@ -31,74 +31,43 @@ from fastfood import utils
 LOG = logging.getLogger(__name__)
 
 
-def build_cookbook(build_config, templatepack, cookbooks_home, force=False):
-    """Build a cookbook from a fastfood.json file.
+def _determine_selected_stencil(stencil_set, stencil_definition):
+    """Determine appropriate stencil name for stencil definition
 
-    Can build on an existing cookbook, otherwise this will
-    create a new cookbook for you based on your templatepack.
+
+    Given a fastfood.json stencil definition with a stencil set, figure out
+    what the name of the stencil within the set should be, or use the default
     """
 
-    with open(build_config) as cfg:
-        cfg = json.load(cfg)
-
-    cookbook_name = cfg['name']
-    written_files = []
-    cookbook = create_new_cookbook(cookbook_name, cookbooks_home)
-
-    for stencil in cfg['stencils']:
-        stencil_set = stencil.pop('stencil_set')
-        # items left un-popped are **options
-        files, updated_cookbook = process_stencil(
-            cookbook,
-            cookbook_name,  # pass this in case metadata.rb isn't written yet
-            templatepack,
-            force,
-            stencil_set,
-            **stencil
-            )
-        written_files.extend(files)
-    return written_files, cookbook
-
-
-def process_stencil(cookbook, cookbook_name, templatepack,
-                    force_argument, stencilset_name, **options):
-    """Process the stencil + options, writing any missing files as needed.
-
-    The stencil named 'stencilset_name' should
-    be one of templatepack's stencils.
-    """
-
-    # force can be passed on the command line or forced in a stencil's options
-    force = force_argument or options.get('force', False)
-    tmppack = pack.TemplatePack(templatepack)
-    stencilset = tmppack.load_stencil_set(stencilset_name)
-
-    if 'stencil' not in options:
-        selected_stencil = stencilset.manifest.get('default_stencil')
+    if 'stencil' not in stencil_definition:
+        selected_stencil_name = stencil_set.manifest.get('default_stencil')
     else:
-        selected_stencil = options['stencil']
+        selected_stencil_name = stencil_definition.get('stencil')
 
-    if not selected_stencil:
-        raise ValueError("No %s stencil specified." % stencilset_name)
+    if not selected_stencil_name:
+        raise ValueError("No stencil name, within stencil set %s, specified."
+                         % stencil_definition['name'])
 
-    stencil = stencilset.get_stencil(selected_stencil, **options)
+    return selected_stencil_name
 
-    files = {
-        # files.keys() are template paths, files.values() are target paths
-        # {path to template: rendered target path, ... }
-        os.path.join(stencilset.path, tpl): os.path.join(cookbook.path, tgt)
-        for tgt, tpl in stencil['files'].iteritems()
-    }
+
+def _build_template_map(cookbook, cookbook_name, stencil):
+    """Build a map of variables for this generated cookbook and stencil
+
+
+    Get template variables from stencil option values, adding the default ones
+    like cookbook and cookbook year.
+    """
 
     template_map = {
         'cookbook': {"name": cookbook_name},
-        'options': stencil['options'],
+        'options': stencil['options']
     }
 
     # Cookbooks may not yet have metadata, so we pass an empty dict if so
     try:
         template_map['cookbook'] = cookbook.metadata.to_dict().copy()
-    except ValueError as err:
+    except ValueError:
         # ValueError may be returned if this cookbook does not yet have any
         # metadata.rb written by a stencil. This is okay, as everyone should
         # be using the base stencil first, and then we'll try to call
@@ -106,8 +75,18 @@ def process_stencil(cookbook, cookbook_name, templatepack,
         pass
 
     template_map['cookbook']['year'] = datetime.datetime.now().year
-    filetable = templating.render_templates(*files.keys(), **template_map)
-    written_files = []
+    return template_map
+
+
+def _render_templates(files, filetable, written_files, force, open_mode='w'):
+    """Write template contents from filetable into files
+
+
+    Using filetable for the rendered templates, and the list of files, render
+    all the templates into actual files on disk, forcing to overwrite the file
+    as appropriate, and using the given open mode for the file
+    """
+
     for tpl_path, content in filetable:
         target_path = files[tpl_path]
         needdir = os.path.dirname(target_path)
@@ -122,16 +101,98 @@ def process_stencil(cookbook, cookbook_name, templatepack,
             if force:
                 LOG.warning("Forcing overwrite of existing file %s.",
                             target_path)
+            elif target_path in written_files:
+                LOG.warning("Previous stencil has already written file %s.",
+                            target_path)
             else:
                 print("Skipping existing file %s" % target_path)
                 LOG.info("Skipping existing file %s", target_path)
                 continue
 
-        with open(target_path, 'w') as newfile:
+        with open(target_path, open_mode) as newfile:
             print("Writing rendered file %s" % target_path)
             LOG.info("Writing rendered file %s", target_path)
             newfile.write(content)
             written_files.append(target_path)
+
+
+def build_cookbook(build_config, templatepack_path,
+                   cookbooks_home, force=False):
+    """Build a cookbook from a fastfood.json file.
+
+    Can build on an existing cookbook, otherwise this will
+    create a new cookbook for you based on your templatepack.
+    """
+
+    with open(build_config) as cfg:
+        cfg = json.load(cfg)
+
+    cookbook_name = cfg['name']
+    template_pack = pack.TemplatePack(templatepack_path)
+
+    written_files = []
+    cookbook = create_new_cookbook(cookbook_name, cookbooks_home)
+
+    for stencil_definition in cfg['stencils']:
+
+        selected_stencil_set_name = stencil_definition.get('stencil_set')
+        stencil_set = template_pack.load_stencil_set(selected_stencil_set_name)
+
+        selected_stencil_name = _determine_selected_stencil(
+            stencil_set,
+            stencil_definition
+            )
+
+        stencil = stencil_set.get_stencil(selected_stencil_name,
+                                          **stencil_definition)
+
+        updated_cookbook = process_stencil(
+            cookbook,
+            cookbook_name,  # in case no metadata.rb yet
+            template_pack,
+            force,
+            stencil_set,
+            stencil,
+            written_files
+            )
+
+    return written_files, updated_cookbook
+
+
+def process_stencil(cookbook, cookbook_name, template_pack,
+                    force_argument, stencil_set, stencil, written_files):
+    """Process the stencil requested, writing any missing files as needed.
+
+    The stencil named 'stencilset_name' should
+    be one of templatepack's stencils.
+    """
+
+    # force can be passed on the command line or forced in a stencil's options
+    force = force_argument or stencil['options'].get('force', False)
+
+    stencil['files'] = stencil.get('files') or {}
+    files = {
+        # files.keys() are template paths, files.values() are target paths
+        # {path to template: rendered target path, ... }
+        os.path.join(stencil_set.path, tpl): os.path.join(cookbook.path, tgt)
+        for tgt, tpl in stencil['files'].iteritems()
+    }
+
+    stencil['partials'] = stencil.get('partials') or {}
+    partials = {
+        # files.keys() are template paths, files.values() are target paths
+        # {path to template: rendered target path, ... }
+        os.path.join(stencil_set.path, tpl): os.path.join(cookbook.path, tgt)
+        for tgt, tpl in stencil['partials'].iteritems()
+    }
+
+    template_map = _build_template_map(cookbook, cookbook_name, stencil)
+
+    filetable = templating.render_templates(*files.keys(), **template_map)
+    _render_templates(files, filetable, written_files, force)
+
+    parttable = templating.render_templates(*partials.keys(), **template_map)
+    _render_templates(partials, parttable, written_files, force, open_mode='a')
 
     # merge metadata.rb dependencies
     stencil_metadata_deps = {'depends': stencil.get('dependencies', {})}
@@ -142,7 +203,8 @@ def process_stencil(cookbook, cookbook_name, templatepack,
     stencil_berks_deps = {'cookbook': stencil.get('berks_dependencies', {})}
     stencil_berks = book.Berksfile.from_dict(stencil_berks_deps)
     cookbook.berksfile.merge(stencil_berks)
-    return written_files, cookbook
+
+    return cookbook
 
 
 def create_new_cookbook(cookbook_name, cookbooks_home):
