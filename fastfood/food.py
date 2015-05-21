@@ -31,8 +31,7 @@ from fastfood import utils
 LOG = logging.getLogger(__name__)
 
 
-def build_cookbook(build_config, templatepack, cookbooks_home,
-                   cookbook_path=None, force=False):
+def build_cookbook(build_config, templatepack, cookbooks_home, force=False):
     """Build a cookbook from a fastfood.json file.
 
     Can build on an existing cookbook, otherwise this will
@@ -42,40 +41,35 @@ def build_cookbook(build_config, templatepack, cookbooks_home,
     with open(build_config) as cfg:
         cfg = json.load(cfg)
 
-    cookbook = None
-    if cookbook_path:
-        try:
-            cookbook = book.CookBook(cookbook_path)
-        # change this to a more specific error
-        except ValueError:
-            # create a new one please
-            pass
-
+    cookbook_name = cfg['name']
     written_files = []
-    if not cookbook:
-        cookbook_name = cfg['name']
-        files, cookbook = create_new_cookbook(
-            cookbook_name, templatepack, cookbooks_home, force=force)
-        written_files.extend(files)
+    cookbook = create_new_cookbook(cookbook_name, cookbooks_home)
 
     for stencil in cfg['stencils']:
         stencil_set = stencil.pop('stencil_set')
         # items left un-popped are **options
-        files, updated_cookbook = update_cookbook(
-            cookbook, templatepack, stencil_set, **stencil)
+        files, updated_cookbook = process_stencil(
+            cookbook,
+            cookbook_name,  # pass this in case metadata.rb isn't written yet
+            templatepack,
+            force,
+            stencil_set,
+            **stencil
+            )
         written_files.extend(files)
-        assert updated_cookbook is cookbook
     return written_files, cookbook
 
 
-def update_cookbook(cookbook, templatepack, stencilset_name, **options):
-    """Update the cookbook with the stencil + options.
+def process_stencil(cookbook, cookbook_name, templatepack,
+                    force_argument, stencilset_name, **options):
+    """Process the stencil + options, writing any missing files as needed.
 
     The stencil named 'stencilset_name' should
     be one of templatepack's stencils.
     """
 
-    force = options.get('force', False)
+    # force can be passed on the command line or forced in a stencil's options
+    force = force_argument or options.get('force', False)
     tmppack = pack.TemplatePack(templatepack)
     stencilset = tmppack.load_stencil_set(stencilset_name)
 
@@ -97,9 +91,19 @@ def update_cookbook(cookbook, templatepack, stencilset_name, **options):
     }
 
     template_map = {
+        'cookbook': {"name": cookbook_name},
         'options': stencil['options'],
-        'cookbook': cookbook.metadata.to_dict().copy(),
     }
+
+    # Cookbooks may not yet have metadata, so we pass an empty dict if so
+    try:
+        template_map['cookbook'] = cookbook.metadata.to_dict().copy()
+    except ValueError as err:
+        # ValueError may be returned if this cookbook does not yet have any
+        # metadata.rb written by a stencil. This is okay, as everyone should
+        # be using the base stencil first, and then we'll try to call
+        # cookbook.metadata again in this method later down.
+        pass
 
     template_map['cookbook']['year'] = datetime.datetime.now().year
     filetable = templating.render_templates(*files.keys(), **template_map)
@@ -141,85 +145,29 @@ def update_cookbook(cookbook, templatepack, stencilset_name, **options):
     return written_files, cookbook
 
 
-def create_new_cookbook(cookbook_name, templatepack,
-                        cookbooks_home, force=False):
+def create_new_cookbook(cookbook_name, cookbooks_home):
     """Create a new cookbook.
 
     :param cookbook_name: Name of the new cookbook.
-    :param templatepack: Path to templatepack.
     :param cookbooks_home: Target dir for new cookbook.
     """
     cookbooks_home = utils.normalize_path(cookbooks_home)
 
-    tmppack = pack.TemplatePack(templatepack)
-    tpmanifest = tmppack.manifest
+    if not os.path.exists(cookbooks_home):
+        raise ValueError("Target cookbook dir %s does not exist."
+                         % os.path.relpath(cookbooks_home))
 
-    files, directories = [], []
-    for option, data in tpmanifest['base'].iteritems():
-        if option == 'files':
-            if not isinstance(data, list):
-                raise TypeError("Base files should be a list of files.")
-            files = data
-        elif option == 'directories':
-            if not isinstance(data, list):
-                raise TypeError("Base directories should be a list of "
-                                "directory names.")
-            directories = data
+    target_dir = os.path.join(cookbooks_home, cookbook_name)
+    LOG.debug("Creating dir -> %s", target_dir)
+    try:
+        os.makedirs(target_dir)
+    except OSError as err:
+        if err.errno != errno.EEXIST:
+            raise
         else:
-            raise ValueError("Unknown 'base' option '%s'" % option)
+            LOG.info("Skipping existing directory %s", target_dir)
 
-    if files:
-        if not os.path.exists(cookbooks_home):
-            raise ValueError("Target cookbook dir %s does not exist."
-                             % os.path.relpath(cookbooks_home))
+    cookbook_path = os.path.join(cookbooks_home, cookbook_name)
+    cookbook = book.CookBook(cookbook_path)
 
-    template_map = {
-        'cookbook': {
-            'name': cookbook_name,
-            'year': datetime.datetime.now().year,
-            }
-        }
-
-    template_files = [os.path.join(templatepack, 'base', f)
-                      for f in files]
-    path_map = dict(zip(template_files, files))
-    filetable = templating.render_templates(*template_files, **template_map)
-
-    for path in directories:
-        target_dir = os.path.join(cookbooks_home, cookbook_name, path)
-        LOG.debug("Creating dir -> %s", target_dir)
-        try:
-            os.makedirs(target_dir)
-        except OSError as err:
-            if err.errno != errno.EEXIST:
-                raise
-            else:
-                LOG.info("Skipping existing directory %s",
-                         target_dir)
-
-    written_files = []
-    for orig_path, content in filetable:
-        target_path = os.path.join(
-            cookbooks_home, cookbook_name, path_map[orig_path])
-        needdir = os.path.dirname(target_path)
-        assert needdir, "Target should have valid parent dir"
-        try:
-            os.makedirs(needdir)
-        except OSError as err:
-            if err.errno != errno.EEXIST:
-                raise
-
-        if os.path.isfile(target_path):
-            if force:
-                LOG.warning("Forcing overwrite of existing file %s.",
-                            target_path)
-            else:
-                LOG.info("Skipping existing file %s", target_path)
-                continue
-        with open(target_path, 'w') as newfile:
-            LOG.info("Writing rendered file %s", target_path)
-            written_files.append(target_path)
-            newfile.write(content)
-
-    return (written_files, book.CookBook(os.path.join(cookbooks_home,
-                                                      cookbook_name)))
+    return cookbook

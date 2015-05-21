@@ -65,6 +65,13 @@ class TestFastfoodCommands(unittest.TestCase):
                 if exc.errno != errno.ENOENT:
                     raise
 
+    def file_contains(self, filename, text):
+        with open(filename, 'r') as f:
+            output = f.read()
+            return text in output
+
+    def assertFileContains(self, filename, text):
+        self.assertTrue(self.file_contains(filename, text))
 
 if __name__ == '__main__':
     unittest.main()

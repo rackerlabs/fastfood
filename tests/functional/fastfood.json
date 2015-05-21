@@ -1,0 +1,13 @@
+{
+  "name": "functional_test_cookbook",
+  "stencils": [
+    {
+      "stencil_set": "base",
+      "stencil": "base"
+    },
+    {
+      "stencil_set": "apache",
+      "stencil": "apache"
+    }
+  ]
+}

@@ -26,7 +26,6 @@ import threading
 import urllib2
 
 import fastfood
-from fastfood import book
 from fastfood import exc
 from fastfood import food
 from fastfood import pack
@@ -34,39 +33,18 @@ from fastfood import pack
 _local = threading.local()
 LOG = logging.getLogger(__name__)
 NAMESPACE = 'fastfood'
-EXCLAIM = '\xe2\x9d\x97\xef\xb8\x8f'
-CHECK = '\xe2\x9c\x85'
-PIZZA = '\xf0\x9f\x8d\x95'
-INTERROBANG = '\xe2\x81\x89\xef\xb8\x8f'
-RED_X = '\xe2\x9d\x8c'
-
-
-def _fastfood_gen(args):
-
-    cookbook = book.CookBook(args.cookbook)
-    return food.update_cookbook(
-        cookbook, args.template_pack, args.stencil_set,
-        force=args.force, **args.options)
-
-
-def _fastfood_new(args):
-    written_files, cookbook = food.create_new_cookbook(
-        args.cookbook_name, args.template_pack, args.cookbooks)
-
-    if len(written_files) > 0:
-        print("%s: %s files written" % (args.cookbook_name,
-                                        len(written_files)))
-    else:
-        print("%s up to date" % args.cookbook_name)
-
-    return written_files, cookbook
+EXCLAIM = u'\U00002757'
+CHECK = u'\U00002705'
+PIZZA = u'\U0001F355'
+INTERROBANG = u'\U00002049\U0000FE0F'
+RED_X = u'\U0000274C'
 
 
 def _fastfood_build(args):
 
     written_files, cookbook = food.build_cookbook(
         args.config_file, args.template_pack,
-        args.cookbooks, cookbook_path=args.cookbook)
+        args.cookbooks, args.force)
 
     if len(written_files) > 0:
         print("%s: %s files written" % (cookbook,
@@ -170,7 +148,7 @@ def main(argv=None):
             uploaded = datetime.strptime(
                 release['upload_time'], '%Y-%m-%dT%H:%M:%S')
             sym = EXCLAIM if vers != fastfood.__version__ else CHECK
-            message = "{}  fastfood version {} uploaded {}\n"
+            message = u"{}  fastfood version {} uploaded {}\n"
             message = message.format(sym, vers, uploaded.ctime())
             prsr.exit(message=message)
 
@@ -201,24 +179,6 @@ def main(argv=None):
         help='...')
 
     #
-    # `fastfood gen`
-    #
-    gen_parser = subparsers.add_parser(
-        'gen', help='Create a new recipe for an existing cookbook.',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    gen_parser.add_argument('stencil_set',
-                            help="Stencil set to use.")
-    gen_parser.add_argument('options', nargs='*', type=_split_key_val,
-                            metavar='option',
-                            help="Stencil options.")
-    gen_parser.add_argument(
-        '-c', '--cookbook', default=os.getcwd(),
-        help="Target cookbook. (defaults to current working directory)")
-    gen_parser.add_argument('--force', '-f', action='store_true',
-                            default=False, help="Overwrite existing files.")
-    gen_parser.set_defaults(func=_fastfood_gen)
-
-    #
     # `fastfood list`
     #
     list_parser = subparsers.add_parser(
@@ -239,16 +199,6 @@ def main(argv=None):
     show_parser.set_defaults(func=_fastfood_show)
 
     #
-    # `fastfood new`
-    #
-    new_parser = subparsers.add_parser(
-        'new', help='Create a cookbook.',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    new_parser.add_argument('cookbook_name',
-                            help="Name of the new cookbook.")
-    new_parser.set_defaults(func=_fastfood_new)
-
-    #
     # `fastfood build`
     #
     build_parser = subparsers.add_parser(
@@ -256,9 +206,9 @@ def main(argv=None):
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     build_parser.add_argument('config_file',
                               help="JSON config file")
-    build_parser.add_argument(
-        '-c', '--cookbook', default=os.getcwd(),
-        help="Target cookbook (optional).")
+    build_parser.add_argument('--force', '-f', action='store_true',
+                              default=False, help="Overwrite existing files.")
+
     build_parser.set_defaults(func=_fastfood_build)
 
     setattr(_local, 'argparser', parser)

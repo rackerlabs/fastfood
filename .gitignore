@@ -52,3 +52,6 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# For Fastfood templatepack testing
+tests/cookbooks/

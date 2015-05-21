@@ -1,0 +1,32 @@
+{
+  "id": "base",
+  "api": 1,
+  "default_stencil": "base",
+  "dependencies": {
+  },
+  "options": {
+  },
+  "stencils": {
+    "base": {
+      "files": {
+        "metadata.rb": "files/metadata.rb.jinja2",
+        ".gitignore": "files/.gitignore",
+        ".kitchen.yml": "files/.kitchen.yml.jinja2",
+        "Berksfile": "files/Berksfile",
+        "CHANGELOG.md": "files/CHANGELOG.md",
+        "Gemfile": "files/Gemfile",
+        "fastfood.json": "files/fastfood.json",
+        "Rakefile": "files/Rakefile",
+        "README.md": "files/README.md",
+        "recipes/default.rb": "recipes/default.rb",
+        "test/unit/spec/default_spec.rb": "test/unit/spec/default_spec.rb",
+        "test/unit/spec/spec_helper.rb": "test/unit/spec/spec_helper.rb",
+        "test/integration/encrypted_data_bag_secret": "test/integration/encrypted_data_bag_secret",
+        "test/integration/default/serverspec/spec_helper.rb": "test/integration/default/serverspec/spec_helper.rb",
+        "test/integration/default/serverspec/default_spec.rb": "test/integration/default/serverspec/default_spec.rb"
+      },
+      "options": {
+      }
+    }
+  }
+}
