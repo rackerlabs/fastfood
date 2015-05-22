@@ -21,21 +21,29 @@ python setup.py install
 
 ### Command Line Usage
 
-#### gen
-Generates or updates an existing cookbook by rendering a given stencil_set
-followed by options.
+#### list
+Shows a list of available stencils in your template pack.
 
-Ex:
+Example:
 ```
-fastfood gen -c /home/me/cookbooks/mycookbook redis name:redis_recipe
+$ fastfood list
+Available Stencil Sets:
+       varnish - Creates a recipe for installing Varnish
+      ha-redis - Creates a highly available Redis and HAProxy recipe
+          java - Installs Java JRE
 ```
 
-#### new
-Creates a new cookbook using a given templatepacks base files.
+#### show
+Shows more information about a stencil, including available options.
 
-Ex:
 ```
-fastfood new mycookbook
+$ fastfood show nginx
+Stencil Set nginx:
+  Stencils:
+    nginx
+  Options:
+    name - Name of the recipe to create
+    example - Various premade Nginx examples
 ```
 
 #### build
@@ -47,6 +55,9 @@ Example Template:
 {
   "name": "mycookbook",
   "stencils": [
+    {
+      "stencil_set": "base"
+    },
     {
       "stencil_set": "rabbitmq",
       "openfor": "myapp"
