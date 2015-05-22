@@ -12,6 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
+__all__ = [
+    '__title__',
+    '__summary__',
+    '__author__',
+    '__email__',
+    '__version__',
+    '__license__',
+    '__copyright__',
+    '__url__',
+]
 
-from fastfood.__about__ import *  # noqa
+__title__ = 'fastfood'
+__summary__ = 'Chef Cookbook Wizardry'
+__author__ = 'Rackers'
+__email__ = 'samuel.stavinoha@rackspace.com'
+__version__ = '0.1.9'
+__license__ = 'Apache License, Version 2.0'
+__copyright__ = 'Copyright Rackspace US, Inc. 2015'
+__url__ = 'https://github.com/rackerlabs/fastfood'
