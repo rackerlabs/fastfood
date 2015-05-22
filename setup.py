@@ -16,10 +16,8 @@
 
 """Fastfood packaging and installation."""
 
-import ast
-import re
+import os
 from setuptools import setup, find_packages
-
 
 DEPENDENCIES = [
     'jinja2==2.7.3',
@@ -27,38 +25,22 @@ DEPENDENCIES = [
 TESTS_REQUIRE = [
 ]
 
+src_dir = os.path.dirname(os.path.realpath(__file__))
 
-def package_meta():
-    """Read __init__.py for global package metadata.
-
-    Do this without importing the package.
-    """
-    _version_re = re.compile(r'__version__\s+=\s+(.*)')
-    _url_re = re.compile(r'__url__\s+=\s+(.*)')
-    _license_re = re.compile(r'__license__\s+=\s+(.*)')
-
-    with open('fastfood/__init__.py', 'rb') as ffinit:
-        initcontent = ffinit.read()
-        version = str(ast.literal_eval(_version_re.search(
-            initcontent.decode('utf-8')).group(1)))
-        url = str(ast.literal_eval(_url_re.search(
-            initcontent.decode('utf-8')).group(1)))
-        licencia = str(ast.literal_eval(_license_re.search(
-            initcontent.decode('utf-8')).group(1)))
-    return {
-        'version': version,
-        'license': licencia,
-        'url': url,
-    }
-
-_ff_meta = package_meta()
+about = {}
+with open(os.path.join(src_dir, 'fastfood', '__about__.py')) as abt:
+    exec(abt.read(), about)
 
 
 setup(
-    name='fastfood',
-    description='Chef Cookbook Wizardry',
+    name=about['__title__'],
+    version=about['__version__'],
+    description=about['__summary__'],
+    license=about['__license__'],
+    url=about['__url__'],
+    author=about['__author__'],
+    maintainer_email=about['__email__'],
     keywords='chef cookbook templates',
-    version=_ff_meta['version'],
     tests_require=TESTS_REQUIRE,
     test_suite='tests',
     install_requires=DEPENDENCIES,
@@ -67,10 +49,6 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 2.7",
     ],
-    license=_ff_meta['license'],
-    author='Rackers',
-    maintainer_email='samuel.stavinoha@rackspace.com',
-    url=_ff_meta['url'],
     entry_points={
         'console_scripts': [
             'fastfood=fastfood.shell:main'
