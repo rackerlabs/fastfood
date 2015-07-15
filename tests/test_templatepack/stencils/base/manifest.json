@@ -26,6 +26,9 @@
         "test/integration/default/serverspec/default_spec.rb": "test/integration/default/serverspec/default_spec.rb",
         "multiple_stencils.txt": "files/multiple_stencils.txt"
       },
+      "binaries": {
+        "images/rackspace.jpg": "files/rackspace.jpg"
+      },
       "options": {
       }
     }

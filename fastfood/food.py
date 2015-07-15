@@ -22,6 +22,7 @@ import errno
 import json
 import logging
 import os
+import shutil
 
 from fastfood import book
 from fastfood import pack
@@ -76,6 +77,41 @@ def _build_template_map(cookbook, cookbook_name, stencil):
 
     template_map['cookbook']['year'] = datetime.datetime.now().year
     return template_map
+
+
+def _render_binaries(files, written_files):
+    """Write binary contents from filetable into files
+
+
+    Using filetable for the input files, and the list of files, render
+    all the templates into actual files on disk, forcing to overwrite the file
+    as appropriate, and using the given open mode for the file
+    """
+
+    for source_path, target_path in files.iteritems():
+        needdir = os.path.dirname(target_path)
+        assert needdir, "Target should have valid parent dir"
+        try:
+            os.makedirs(needdir)
+        except OSError as err:
+            if err.errno != errno.EEXIST:
+                raise
+
+        if os.path.isfile(target_path):
+            if target_path in written_files:
+                LOG.warning("Previous stencil has already written file %s.",
+                            target_path)
+            else:
+                print("Skipping existing file %s" % target_path)
+                LOG.info("Skipping existing file %s", target_path)
+                continue
+
+        print("Writing rendered file %s" % target_path)
+        LOG.info("Writing rendered file %s", target_path)
+
+        shutil.copy(source_path, target_path)
+        if os.path.exists(target_path):
+            written_files.append(target_path)
 
 
 def _render_templates(files, filetable, written_files, force, open_mode='w'):
@@ -186,6 +222,14 @@ def process_stencil(cookbook, cookbook_name, template_pack,
         for tgt, tpl in stencil['partials'].iteritems()
     }
 
+    stencil['binaries'] = stencil.get('binaries') or {}
+    binaries = {
+        # files.keys() are binary paths, files.values() are target paths
+        # {path to binary: rendered target path, ... }
+        os.path.join(stencil_set.path, tpl): os.path.join(cookbook.path, tgt)
+        for tgt, tpl in stencil['binaries'].iteritems()
+    }
+
     template_map = _build_template_map(cookbook, cookbook_name, stencil)
 
     filetable = templating.render_templates(*files.keys(), **template_map)
@@ -193,6 +237,9 @@ def process_stencil(cookbook, cookbook_name, template_pack,
 
     parttable = templating.render_templates(*partials.keys(), **template_map)
     _render_templates(partials, parttable, written_files, force, open_mode='a')
+
+    # no templating needed for binaries, just pass off to the copy method
+    _render_binaries(binaries, written_files)
 
     # merge metadata.rb dependencies
     stencil_metadata_deps = {'depends': stencil.get('dependencies', {})}
