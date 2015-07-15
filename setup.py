@@ -19,12 +19,6 @@
 import os
 from setuptools import setup, find_packages
 
-DEPENDENCIES = [
-    'jinja2==2.7.3',
-]
-TESTS_REQUIRE = [
-]
-
 src_dir = os.path.dirname(os.path.realpath(__file__))
 
 about = {}
@@ -39,27 +33,52 @@ with open(os.path.join(src_dir, 'README.rst')) as rdme:
     LONG_DESCRIPTION = rdme.read()
 
 
-setup(
-    name=about['__title__'],
-    version=about['__version__'],
-    description=about['__summary__'],
-    long_description=LONG_DESCRIPTION,
-    license=about['__license__'],
-    url=about['__url__'],
-    author=about['__author__'],
-    maintainer_email=about['__email__'],
-    keywords='chef cookbook templates',
-    tests_require=TESTS_REQUIRE,
-    test_suite='tests',
-    install_requires=DEPENDENCIES,
-    packages=find_packages(exclude=['tests']),
-    classifiers=[
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 2.7",
-    ],
-    entry_points={
-        'console_scripts': [
-            'fastfood=fastfood.shell:main'
-        ]
-    },
-)
+INSTALL_REQUIRES = [
+    'jinja2==2.7.3',
+]
+
+
+TESTS_REQUIRE = [
+    'pylint==1.4.1',
+    'flake8==2.3.0',
+    'vcrpy==1.4.0',
+]
+
+
+CLASSIFIERS = [
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: Apache Software License',
+    'Operating System :: OS Independent',
+    'Topic :: Software Development',
+    'Topic :: Software Development :: Code Generators',
+    'Development Status :: 4 - Beta',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 2',
+    'Programming Language :: Python :: 2.7',
+]
+
+
+ENTRY_POINTS = {
+    'console_scripts': ['fastfood=fastfood.shell:main'],
+}
+
+
+package_attributes = {
+    'author': about['__author__'],
+    'author_email': about['__email__'],
+    'classifiers': CLASSIFIERS,
+    'name': about['__title__'],
+    'description': about['__summary__'],
+    'install_requires': INSTALL_REQUIRES,
+    'keywords': ' '.join(about['__keywords__']),
+    'license': about['__license__'],
+    'long_description': LONG_DESCRIPTION,
+    'packages': find_packages(exclude=['tests']),
+    'test_suite': 'tests',
+    'tests_require': TESTS_REQUIRE,
+    'url': about['__url__'],
+    'version': about['__version__'],
+}
+
+
+setup(**package_attributes)

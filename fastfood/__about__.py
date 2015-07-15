@@ -28,6 +28,7 @@ __summary__ = 'Chef Cookbook Wizardry'
 __author__ = 'Rackers'
 __email__ = 'samuel.stavinoha@rackspace.com'
 __version__ = '1.0.0'
+__keywords__ = ['chef', 'cookbook', 'templating', 'generation']
 __license__ = 'Apache License, Version 2.0'
 __copyright__ = 'Copyright Rackspace US, Inc. 2015'
 __url__ = 'https://github.com/rackerlabs/fastfood'
