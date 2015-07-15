@@ -18,7 +18,7 @@ Any special use cases or deployment methods for |{ cookbook['name'] }| Cookbook,
 
 This is where you should define what the default recipe does, if anything.
 
-### |{ cookbook['name'] }| Cookbook::recipes 
+### |{ cookbook['name'] }| Cookbook::recipes
 
 Please define what the other recipes do as well.
 
@@ -29,6 +29,8 @@ See [CONTRIBUTING](https://github.com/AutomationSupport/templatestack/blob/maste
 ## Authors
 
 Author:: Rackspace (devops-chef@rackspace.com)
+
+![Rackspace Logo](images/rackspace.jpg "Fanatiguy")
 
 ## License
 ```

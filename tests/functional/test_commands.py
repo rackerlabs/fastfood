@@ -70,6 +70,9 @@ class TestFastfoodCommands(unittest.TestCase):
             output = f.read()
             return text in output
 
+    def assertFileExists(self, filename):
+        return os.path.exists(filename)
+
     def assertFileContains(self, filename, text):
         self.assertTrue(self.file_contains(filename, text))
 

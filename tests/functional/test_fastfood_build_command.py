@@ -81,13 +81,17 @@ class TestFastfoodBuildCommand(test_commands.TestFastfoodCommands):
                                 ('# Copyright %s') % str(current_year))
 
         newrelic_rb = os.path.join(cookbook.path, 'recipes', 'newrelic.rb')
-        self.assertTrue(os.path.isfile(newrelic_rb))
+        self.assertFileExists(newrelic_rb)
 
         # verify that multiple_stencils.txt was overwritten with last stencil
         # that appeared in ordered array in tests/functional/fastfood.json
         multiple_stencils_txt = os.path.join(cookbook.path,
                                              'multiple_stencils.txt')
         self.assertFileContains(multiple_stencils_txt, 'apache stencil')
+
+        rackspace_jpg = os.path.join(cookbook.path, 'images', 'rackspace.jpg')
+        self.assertFileExists(rackspace_jpg)
+
 
 if __name__ == '__main__':
     unittest.main()
