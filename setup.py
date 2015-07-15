@@ -34,14 +34,14 @@ with open(os.path.join(src_dir, 'README.rst')) as rdme:
 
 
 INSTALL_REQUIRES = [
-    'jinja2==2.7.3',
+    'Jinja2==2.7.3',
 ]
 
 
 TESTS_REQUIRE = [
-    'pylint==1.4.1',
-    'flake8==2.3.0',
-    'vcrpy==1.4.0',
+    'pylint==1.4.4',
+    'flake8==2.4.1',
+    'vcrpy==1.6.1',
 ]
 
 
