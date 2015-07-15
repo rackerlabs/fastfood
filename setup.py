@@ -32,10 +32,18 @@ with open(os.path.join(src_dir, 'fastfood', '__about__.py')) as abt:
     exec(abt.read(), about)
 
 
+# README.rst is for fastfood's PyPI page
+# pandoc --from=markdown_github --to=rst README.md --output=README.rst
+readme = os.path.join(src_dir, 'README.rst')
+with open(os.path.join(src_dir, 'README.rst')) as rdme:
+    LONG_DESCRIPTION = rdme.read()
+
+
 setup(
     name=about['__title__'],
     version=about['__version__'],
     description=about['__summary__'],
+    long_description=LONG_DESCRIPTION,
     license=about['__license__'],
     url=about['__url__'],
     author=about['__author__'],
