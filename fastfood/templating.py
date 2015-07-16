@@ -14,6 +14,7 @@
 
 """Jinja templating for Fastfood."""
 
+import codecs
 import os
 import re
 
@@ -57,7 +58,9 @@ def render_templates_generator(*files, **template_map):
                              % os.path.relpath(path))
         else:
             try:
-                template = JINJA_ENV.from_string(open(path).read())
+                with codecs.open(path, encoding='utf-8') as f:
+                    text = f.read()
+                template = JINJA_ENV.from_string(text)
             except jinja2.TemplateSyntaxError as err:
                 msg = ("Error rendering jinja2 template for file %s "
                        "on line %s. Error: %s"
