@@ -28,7 +28,6 @@ with open(os.path.join(src_dir, 'fastfood', '__about__.py')) as abt:
 
 # README.rst is for fastfood's PyPI page
 # pandoc --from=markdown_github --to=rst README.md --output=README.rst
-readme = os.path.join(src_dir, 'README.rst')
 with open(os.path.join(src_dir, 'README.rst')) as rdme:
     LONG_DESCRIPTION = rdme.read()
 
