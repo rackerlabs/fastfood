@@ -66,6 +66,7 @@ package_attributes = {
     'author': about['__author__'],
     'author_email': about['__email__'],
     'classifiers': CLASSIFIERS,
+    'entry_points': ENTRY_POINTS,
     'name': about['__title__'],
     'description': about['__summary__'],
     'install_requires': INSTALL_REQUIRES,
