@@ -23,7 +23,11 @@ import logging
 import os
 import sys
 import threading
-import urllib2
+try:
+    import urllib2 as urllib
+except ImportError:
+    # Python 3
+    from urllib import request as urllib
 
 import fastfood
 from fastfood import exc
@@ -64,7 +68,7 @@ def _fastfood_list(args):
             print("  %s" % stencil)
     else:
         print('Available Stencil Sets:')
-        for name, vals in template_pack.stencil_sets.iteritems():
+        for name, vals in template_pack.stencil_sets.items():
             print("  %12s - %12s" % (name, vals['help']))
 
 
@@ -77,7 +81,7 @@ def _fastfood_show(args):
         for stencil in stencil_set.stencils:
             print("    %s" % stencil)
         print('  Options:')
-        for opt, vals in stencil_set.manifest['options'].iteritems():
+        for opt, vals in stencil_set.manifest['options'].items():
             print("    %s - %s" % (opt, vals['help']))
 
 
@@ -87,8 +91,9 @@ def _release_info():
     headers = {
         'Accept': 'application/json',
     }
-    request = urllib2.Request(pypi_url, headers=headers)
-    data = json.loads(urllib2.urlopen(request).read())
+    request = urllib.Request(pypi_url, headers=headers)
+    response = urllib.urlopen(request).read().decode('utf_8')
+    data = json.loads(response)
     return data
 
 
@@ -164,14 +169,15 @@ def main(argv=None):
                          const=logging.DEBUG,
                          help="Set log-level to DEBUG.")
     parser.set_defaults(loglevel=logging.WARNING)
+    home = os.getenv('HOME') or os.path.expanduser('~') or os.getcwd()
     parser.add_argument(
         '--template-pack', help='template pack location',
         default=getenv(
-            'template_pack', os.path.join(os.getenv('HOME'), '.fastfood')))
+            'template_pack', os.path.join(home, '.fastfood')))
     parser.add_argument(
         '--cookbooks', help='cookbooks directory',
         default=getenv(
-            'cookbooks', os.path.join(os.getenv('HOME'), 'cookbooks')))
+            'cookbooks', os.path.join(home, 'cookbooks')))
 
     subparsers = parser.add_subparsers(
         dest='_subparsers', title='fastfood commands',

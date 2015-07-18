@@ -88,7 +88,7 @@ def _render_binaries(files, written_files):
     as appropriate, and using the given open mode for the file
     """
 
-    for source_path, target_path in files.iteritems():
+    for source_path, target_path in files.items():
         needdir = os.path.dirname(target_path)
         assert needdir, "Target should have valid parent dir"
         try:
@@ -211,7 +211,7 @@ def process_stencil(cookbook, cookbook_name, template_pack,
         # files.keys() are template paths, files.values() are target paths
         # {path to template: rendered target path, ... }
         os.path.join(stencil_set.path, tpl): os.path.join(cookbook.path, tgt)
-        for tgt, tpl in stencil['files'].iteritems()
+        for tgt, tpl in stencil['files'].items()
     }
 
     stencil['partials'] = stencil.get('partials') or {}
@@ -219,7 +219,7 @@ def process_stencil(cookbook, cookbook_name, template_pack,
         # files.keys() are template paths, files.values() are target paths
         # {path to template: rendered target path, ... }
         os.path.join(stencil_set.path, tpl): os.path.join(cookbook.path, tgt)
-        for tgt, tpl in stencil['partials'].iteritems()
+        for tgt, tpl in stencil['partials'].items()
     }
 
     stencil['binaries'] = stencil.get('binaries') or {}
@@ -227,7 +227,7 @@ def process_stencil(cookbook, cookbook_name, template_pack,
         # files.keys() are binary paths, files.values() are target paths
         # {path to binary: rendered target path, ... }
         os.path.join(stencil_set.path, tpl): os.path.join(cookbook.path, tgt)
-        for tgt, tpl in stencil['binaries'].iteritems()
+        for tgt, tpl in stencil['binaries'].items()
     }
 
     template_map = _build_template_map(cookbook, cookbook_name, stencil)

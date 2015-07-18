@@ -21,6 +21,12 @@ import os
 from fastfood import exc
 from fastfood import utils
 
+# python 2 vs. 3 string types
+try:
+    basestring
+except NameError:
+    basestring = str
+
 
 class StencilSet(object):
 
@@ -83,14 +89,14 @@ class StencilSet(object):
         utils.deepupdate(stencil, override)
 
         # merge options, prefer **options (probably user-supplied)
-        for opt, data in stencil.get('options', {}).iteritems():
+        for opt, data in stencil.get('options', {}).items():
             if opt not in options:
                 options[opt] = data.get('default', '')
         stencil['options'] = options
 
         name = stencil['options'].get('name')
         files = stencil['files'].copy()
-        for fil, templ in files.iteritems():
+        for fil, templ in files.items():
             if '<NAME>' in fil:
                 # check for the option b/c there are
                 # cases in which it may not exist

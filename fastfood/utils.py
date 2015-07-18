@@ -17,7 +17,17 @@ from __future__ import print_function
 
 import copy
 import os
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    # Python 3
+    from io import StringIO
+
+# python 2 vs. 3 string types
+try:
+    basestring
+except NameError:
+    basestring = str
 
 
 def normalize_path(path):
@@ -61,7 +71,7 @@ def deepupdate(original, update, levels=5):
     if not levels > 0:
         original.update(update)
     else:
-        for key, val in update.iteritems():
+        for key, val in update.items():
             if isinstance(original.get(key), dict):
                 # might need a force=True to override this
                 if not isinstance(val, dict):
@@ -87,7 +97,7 @@ class FileWrapper(object):
     @classmethod
     def from_string(cls, contents):
         """Initialize class with a string."""
-        stream = StringIO.StringIO(contents)
+        stream = StringIO(contents)
         return cls(stream)
 
     def __str__(self):

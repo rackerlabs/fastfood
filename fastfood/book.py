@@ -237,7 +237,7 @@ class Berksfile(utils.FileWrapper):
             # not like the others...
             if 'constraint' in metadata:
                 line += ", '%s'" % metadata.pop('constraint')
-            for opt, spec in metadata.iteritems():
+            for opt, spec in metadata.items():
                 line += ", %s: '%s'" % (opt, spec)
         return line
 

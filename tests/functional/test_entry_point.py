@@ -22,7 +22,7 @@ class TestFastfoodCLI(unittest.TestCase):
         except (subprocess.CalledProcessError, OSError) as err:
             msg = 'Error while running `%s`' % subprocess.list2cmdline(cmd)
             self.fail(msg='%s --> %r' % (msg, err))
-        self.assertIn('usage', output.lower())
+        self.assertIn('usage', str(output).lower())
 
 
 if __name__ == '__main__':
