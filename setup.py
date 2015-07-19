@@ -38,8 +38,13 @@ INSTALL_REQUIRES = [
 
 
 TESTS_REQUIRE = [
-    'pylint==1.4.4',
+    'coverage==3.7.1',
     'flake8==2.4.1',
+    'flake8-docstrings==0.2.1',
+    'mock==1.2.0',
+    'nose==1.3.7',
+    'nose-ignore-docstring==0.2',
+    'pylint==1.4.4',
     'vcrpy==1.6.1',
 ]
 
