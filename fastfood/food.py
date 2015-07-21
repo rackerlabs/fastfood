@@ -33,13 +33,11 @@ LOG = logging.getLogger(__name__)
 
 
 def _determine_selected_stencil(stencil_set, stencil_definition):
-    """Determine appropriate stencil name for stencil definition
-
+    """Determine appropriate stencil name for stencil definition.
 
     Given a fastfood.json stencil definition with a stencil set, figure out
     what the name of the stencil within the set should be, or use the default
     """
-
     if 'stencil' not in stencil_definition:
         selected_stencil_name = stencil_set.manifest.get('default_stencil')
     else:
@@ -53,13 +51,11 @@ def _determine_selected_stencil(stencil_set, stencil_definition):
 
 
 def _build_template_map(cookbook, cookbook_name, stencil):
-    """Build a map of variables for this generated cookbook and stencil
-
+    """Build a map of variables for this generated cookbook and stencil.
 
     Get template variables from stencil option values, adding the default ones
     like cookbook and cookbook year.
     """
-
     template_map = {
         'cookbook': {"name": cookbook_name},
         'options': stencil['options']
@@ -80,15 +76,13 @@ def _build_template_map(cookbook, cookbook_name, stencil):
 
 
 def _render_binaries(files, written_files):
-    """Write binary contents from filetable into files
-
+    """Write binary contents from filetable into files.
 
     Using filetable for the input files, and the list of files, render
     all the templates into actual files on disk, forcing to overwrite the file
-    as appropriate, and using the given open mode for the file
+    as appropriate, and using the given open mode for the file.
     """
-
-    for source_path, target_path in files.iteritems():
+    for source_path, target_path in files.items():
         needdir = os.path.dirname(target_path)
         assert needdir, "Target should have valid parent dir"
         try:
@@ -115,14 +109,12 @@ def _render_binaries(files, written_files):
 
 
 def _render_templates(files, filetable, written_files, force, open_mode='w'):
-    """Write template contents from filetable into files
-
+    """Write template contents from filetable into files.
 
     Using filetable for the rendered templates, and the list of files, render
     all the templates into actual files on disk, forcing to overwrite the file
-    as appropriate, and using the given open mode for the file
+    as appropriate, and using the given open mode for the file.
     """
-
     for tpl_path, content in filetable:
         target_path = files[tpl_path]
         needdir = os.path.dirname(target_path)
@@ -159,7 +151,6 @@ def build_cookbook(build_config, templatepack_path,
     Can build on an existing cookbook, otherwise this will
     create a new cookbook for you based on your templatepack.
     """
-
     with open(build_config) as cfg:
         cfg = json.load(cfg)
 
@@ -177,7 +168,7 @@ def build_cookbook(build_config, templatepack_path,
         selected_stencil_name = _determine_selected_stencil(
             stencil_set,
             stencil_definition
-            )
+        )
 
         stencil = stencil_set.get_stencil(selected_stencil_name,
                                           **stencil_definition)
@@ -190,7 +181,7 @@ def build_cookbook(build_config, templatepack_path,
             stencil_set,
             stencil,
             written_files
-            )
+        )
 
     return written_files, updated_cookbook
 
@@ -199,10 +190,9 @@ def process_stencil(cookbook, cookbook_name, template_pack,
                     force_argument, stencil_set, stencil, written_files):
     """Process the stencil requested, writing any missing files as needed.
 
-    The stencil named 'stencilset_name' should
-    be one of templatepack's stencils.
+    The stencil named 'stencilset_name' should be one of
+    templatepack's stencils.
     """
-
     # force can be passed on the command line or forced in a stencil's options
     force = force_argument or stencil['options'].get('force', False)
 
@@ -211,7 +201,7 @@ def process_stencil(cookbook, cookbook_name, template_pack,
         # files.keys() are template paths, files.values() are target paths
         # {path to template: rendered target path, ... }
         os.path.join(stencil_set.path, tpl): os.path.join(cookbook.path, tgt)
-        for tgt, tpl in stencil['files'].iteritems()
+        for tgt, tpl in stencil['files'].items()
     }
 
     stencil['partials'] = stencil.get('partials') or {}
@@ -219,7 +209,7 @@ def process_stencil(cookbook, cookbook_name, template_pack,
         # files.keys() are template paths, files.values() are target paths
         # {path to template: rendered target path, ... }
         os.path.join(stencil_set.path, tpl): os.path.join(cookbook.path, tgt)
-        for tgt, tpl in stencil['partials'].iteritems()
+        for tgt, tpl in stencil['partials'].items()
     }
 
     stencil['binaries'] = stencil.get('binaries') or {}
@@ -227,7 +217,7 @@ def process_stencil(cookbook, cookbook_name, template_pack,
         # files.keys() are binary paths, files.values() are target paths
         # {path to binary: rendered target path, ... }
         os.path.join(stencil_set.path, tpl): os.path.join(cookbook.path, tgt)
-        for tgt, tpl in stencil['binaries'].iteritems()
+        for tgt, tpl in stencil['binaries'].items()
     }
 
     template_map = _build_template_map(cookbook, cookbook_name, stencil)

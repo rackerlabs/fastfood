@@ -11,10 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# pylint: disable=invalid-name
 
 """Fastfood Exceptions."""
 
 import re
+
+# python 2 vs. 3 string types
+try:
+    basestring
+except NameError:
+    basestring = str
 
 _SPLITCASE_RE = re.compile(r'[A-Z][^A-Z]*')
 
@@ -29,7 +37,7 @@ class FastfoodStencilSetNotListed(FastfoodError):
     """Stencil set specified was not listed in the templatepack manifest."""
 
 
-class FastfoodStencilInvalidPath(FastfoodError):
+class FastfoodStencilSetInvalidPath(FastfoodError):
 
     """Specified path to stencil set does not exist."""
 

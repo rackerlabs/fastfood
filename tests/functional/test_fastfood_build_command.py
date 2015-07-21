@@ -7,9 +7,14 @@ from datetime import date
 
 from fastfood import shell
 
-import test_commands
+from test_commands import TestFastfoodCommands
 
-BUILD_CONFIG = """
+try:
+    unicode
+except NameError:
+    unicode = str
+
+BUILD_CONFIG = unicode("""
 {
   "name": "test_build_cookbook",
   "stencils": [
@@ -32,14 +37,14 @@ BUILD_CONFIG = """
     }
   ]
 }
-""".strip()
+""").strip()
 
 
-class TestFastfoodBuildCommand(test_commands.TestFastfoodCommands):
+class TestFastfoodBuildCommand(TestFastfoodCommands):
 
     def test_fastfood_build_from_scratch(self):
 
-        build_config_file = tempfile.NamedTemporaryFile()
+        build_config_file = tempfile.NamedTemporaryFile(mode='w+')
         build_config_file.write(BUILD_CONFIG)
         build_config_file.seek(0)
 

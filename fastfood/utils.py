@@ -11,13 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# pylint: disable=invalid-name
+
 
 """Fastfood utils."""
 from __future__ import print_function
 
 import copy
 import os
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    # Python 3
+    from io import StringIO
+
+# python 2 vs. 3 string types
+try:
+    basestring
+except NameError:
+    basestring = str
 
 
 def normalize_path(path):
@@ -61,7 +74,7 @@ def deepupdate(original, update, levels=5):
     if not levels > 0:
         original.update(update)
     else:
-        for key, val in update.iteritems():
+        for key, val in update.items():
             if isinstance(original.get(key), dict):
                 # might need a force=True to override this
                 if not isinstance(val, dict):
@@ -80,14 +93,13 @@ class FileWrapper(object):
     """
 
     def __init__(self, stream):
-        """Requires a file-like object."""
-
+        """Initialize the wrapper with a file-like object."""
         self.stream = stream
 
     @classmethod
     def from_string(cls, contents):
         """Initialize class with a string."""
-        stream = StringIO.StringIO(contents)
+        stream = StringIO(contents)
         return cls(stream)
 
     def __str__(self):
@@ -101,6 +113,7 @@ class FileWrapper(object):
                                      hex(id(self))))
 
     def __getattr__(self, attr):
+        """Shortcut to the file-like object's methods."""
         try:
             return getattr(self.stream, attr)
         except AttributeError:

@@ -23,14 +23,20 @@ import logging
 import os
 import sys
 import threading
-import urllib2
+
+try:
+    import urllib2 as urllib
+except ImportError:
+    # Python 3
+    # pylint: disable=no-name-in-module
+    from urllib import request as urllib
 
 import fastfood
 from fastfood import exc
 from fastfood import food
 from fastfood import pack
 
-_local = threading.local()
+_LOCAL = threading.local()
 LOG = logging.getLogger(__name__)
 NAMESPACE = 'fastfood'
 EXCLAIM = u'\U00002757'
@@ -41,7 +47,7 @@ RED_X = u'\U0000274C'
 
 
 def _fastfood_build(args):
-
+    """Run on `fastfood build`."""
     written_files, cookbook = food.build_cookbook(
         args.config_file, args.template_pack,
         args.cookbooks, args.force)
@@ -56,6 +62,7 @@ def _fastfood_build(args):
 
 
 def _fastfood_list(args):
+    """Run on `fastfood list`."""
     template_pack = pack.TemplatePack(args.template_pack)
     if args.stencil_set:
         stencil_set = template_pack.load_stencil_set(args.stencil_set)
@@ -64,11 +71,12 @@ def _fastfood_list(args):
             print("  %s" % stencil)
     else:
         print('Available Stencil Sets:')
-        for name, vals in template_pack.stencil_sets.iteritems():
+        for name, vals in template_pack.stencil_sets.items():
             print("  %12s - %12s" % (name, vals['help']))
 
 
 def _fastfood_show(args):
+    """Run on `fastfood show`."""
     template_pack = pack.TemplatePack(args.template_pack)
     if args.stencil_set:
         stencil_set = template_pack.load_stencil_set(args.stencil_set)
@@ -77,34 +85,38 @@ def _fastfood_show(args):
         for stencil in stencil_set.stencils:
             print("    %s" % stencil)
         print('  Options:')
-        for opt, vals in stencil_set.manifest['options'].iteritems():
+        for opt, vals in stencil_set.manifest['options'].items():
             print("    %s - %s" % (opt, vals['help']))
 
 
 def _release_info():
-
+    """Check latest fastfood release info from PyPI."""
     pypi_url = 'http://pypi.python.org/pypi/fastfood/json'
     headers = {
         'Accept': 'application/json',
     }
-    request = urllib2.Request(pypi_url, headers=headers)
-    data = json.loads(urllib2.urlopen(request).read())
+    request = urllib.Request(pypi_url, headers=headers)
+    response = urllib.urlopen(request).read().decode('utf_8')
+    data = json.loads(response)
     return data
 
 
 def _split_key_val(option):
+    """Split extra command line data into key-value pairs."""
     key_val = option.split(':', 1)
     assert len(key_val) == 2, "Bad option %s" % option
     return key_val
 
 
 def getenv(option_name, default=None):
+    """Return the option from the environment in the FASTFOOD namespace."""
     env = "%s_%s" % (NAMESPACE.upper(), option_name.upper())
     return os.environ.get(env, default)
 
 
 def main(argv=None):
     """fastfood command line interface."""
+    # pylint: disable=missing-docstring
     import argparse
     import traceback
 
@@ -140,7 +152,6 @@ def main(argv=None):
         version='%s %s' % (parser.prog, version_string))
 
     class LatestVersionAction(vers_arg.__class__):
-
         def __call__(self, prsr, *args, **kw):
             info = _release_info()
             vers = info['info']['version']
@@ -164,14 +175,15 @@ def main(argv=None):
                          const=logging.DEBUG,
                          help="Set log-level to DEBUG.")
     parser.set_defaults(loglevel=logging.WARNING)
+    home = os.getenv('HOME') or os.path.expanduser('~') or os.getcwd()
     parser.add_argument(
         '--template-pack', help='template pack location',
         default=getenv(
-            'template_pack', os.path.join(os.getenv('HOME'), '.fastfood')))
+            'template_pack', os.path.join(home, '.fastfood')))
     parser.add_argument(
         '--cookbooks', help='cookbooks directory',
         default=getenv(
-            'cookbooks', os.path.join(os.getenv('HOME'), 'cookbooks')))
+            'cookbooks', os.path.join(home, 'cookbooks')))
 
     subparsers = parser.add_subparsers(
         dest='_subparsers', title='fastfood commands',
@@ -211,7 +223,7 @@ def main(argv=None):
 
     build_parser.set_defaults(func=_fastfood_build)
 
-    setattr(_local, 'argparser', parser)
+    setattr(_LOCAL, 'argparser', parser)
     if not argv:
         argv = None
     args = parser.parse_args(args=argv)
@@ -224,7 +236,7 @@ def main(argv=None):
         args.func(args)
     except exc.FastfoodError as err:
         title = exc.get_friendly_title(err)
-        print('%s  %s: %s' % (RED_X, title, err.message),
+        print('%s  %s: %s' % (RED_X, title, str(err)),
               file=sys.stderr)
         sys.stderr.flush()
         sys.exit(1)

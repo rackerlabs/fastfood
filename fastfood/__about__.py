@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Fastfood package attributes and metadata."""
 
-__all__ = [
+__all__ = (
     '__title__',
     '__summary__',
     '__author__',
@@ -21,7 +22,7 @@ __all__ = [
     '__license__',
     '__copyright__',
     '__url__',
-]
+)
 
 __title__ = 'fastfood'
 __summary__ = 'Chef Cookbook Wizardry'

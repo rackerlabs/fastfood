@@ -29,6 +29,7 @@ CHEF_CONST_RE = '^node\.([\w_-]+)'
 
 
 def qstring(option):
+    """Custom quoting method for jinja."""
     if (re.match(NODE_ATTR_RE, option) is None and
             re.match(CHEF_CONST_RE, option) is None):
         return "'%s'" % option
