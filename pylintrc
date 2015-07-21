@@ -7,7 +7,7 @@ disable=W,R,I,fixme,too-many-arguments,wildcard-import,no-absolute-import,bad-bu
 [BASIC]
 # Don't require docstrings on tests or Python Special Methods
 no-docstring-rgx=(__.*__|[tT]est.*|setUp|tearDown)
-good-names=e,i,j,k,ex,Run,_
+good-names=f,e,i,j,k,ex,Run,_
 bad-names=foo,bar,baz,toto,tutu,tata
 
 [FORMAT]
