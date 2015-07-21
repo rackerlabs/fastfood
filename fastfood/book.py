@@ -22,6 +22,11 @@ from fastfood import utils
 
 class CookBook(object):
 
+    """Chef Cookbook object.
+
+    Understands metadata.rb, Berksfile and how to parse them.
+    """
+
     def __init__(self, path):
         """Initialize CookBook wrapper at 'path'."""
         self.path = utils.normalize_path(path)
@@ -33,6 +38,7 @@ class CookBook(object):
 
     @property
     def name(self):
+        """Cookbook name property."""
         try:
             return self.metadata.to_dict()['name']
         except KeyError:
@@ -89,6 +95,7 @@ class MetadataRb(utils.FileWrapper):
 
     @staticmethod
     def depends_statement(cookbook_name, metadata=None):
+        """Return a valid Ruby 'depends' statement for the metadata.rb file."""
         line = "depends '%s'" % cookbook_name
         if metadata:
             if not isinstance(metadata, dict):
@@ -100,6 +107,7 @@ class MetadataRb(utils.FileWrapper):
         return line
 
     def to_dict(self):
+        """Return a dictionary representation of this metadata.rb file."""
         return self.parse()
 
     def parse(self):
@@ -154,6 +162,7 @@ class Berksfile(utils.FileWrapper):
     ]
 
     def to_dict(self):
+        """Return a dictionary representation of this Berksfile."""
         return self.parse()
 
     def parse(self):
@@ -228,6 +237,7 @@ class Berksfile(utils.FileWrapper):
 
     @staticmethod
     def cookbook_statement(cookbook_name, metadata=None):
+        """Return a valid Ruby 'cookbook' statement for the Berksfile."""
         line = "cookbook '%s'" % cookbook_name
         if metadata:
             if not isinstance(metadata, dict):

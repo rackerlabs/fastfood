@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# pylint: disable=invalid-name
+
 
 """Fastfood utils."""
 from __future__ import print_function
@@ -90,8 +93,7 @@ class FileWrapper(object):
     """
 
     def __init__(self, stream):
-        """Requires a file-like object."""
-
+        """Initialize the wrapper with a file-like object."""
         self.stream = stream
 
     @classmethod
@@ -111,6 +113,7 @@ class FileWrapper(object):
                                      hex(id(self))))
 
     def __getattr__(self, attr):
+        """Shortcut to the file-like object's methods."""
         try:
             return getattr(self.stream, attr)
         except AttributeError:

@@ -24,6 +24,11 @@ from fastfood import utils
 
 class TemplatePack(object):
 
+    """The templatepack object.
+
+    Holds references to stencil sets.
+    """
+
     def __init__(self, path):
         """Initialize, asserting templatepack path and manifest."""
         self._manifest = None
@@ -41,6 +46,7 @@ class TemplatePack(object):
         self._validate('stencil_sets', cls=dict)
 
     def _validate(self, key, cls=None):
+        """Verify the manifest schema."""
         if key not in self.manifest:
             raise ValueError("Manifest %s requires '%s'."
                              % (self.manifest_path, key))
@@ -51,6 +57,7 @@ class TemplatePack(object):
 
     @property
     def manifest(self):
+        """The loaded templatepack manifest property."""
         if not self._manifest:
             with open(self.manifest_path) as man:
                 self._manifest = json.load(man)
@@ -58,6 +65,7 @@ class TemplatePack(object):
 
     @property
     def stencil_sets(self):
+        """List of stencil sets."""
         if not self._stencil_sets:
             self._stencil_sets = self.manifest['stencil_sets']
         return self._stencil_sets

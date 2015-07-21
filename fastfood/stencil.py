@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# pylint: disable=invalid-name
 
 """Fastfood Stencil Set manager."""
 
@@ -30,7 +32,13 @@ except NameError:
 
 class StencilSet(object):
 
+    """The stencil set object.
+
+    Holds references to stencils in the set.
+    """
+
     def __init__(self, path):
+        """Initialize the stencilset object with a local path."""
         # assign these attrs early
         self._manifest = None
         self._stencils = {}
@@ -48,6 +56,7 @@ class StencilSet(object):
         self._validate('default_stencil', cls=basestring)
 
     def _validate(self, key, cls=None):
+        """Verify the manifest schema."""
         if key not in self.manifest:
             raise ValueError("Stencil Set %s requires '%s'."
                              % (self.manifest_path, key))
@@ -56,17 +65,9 @@ class StencilSet(object):
                 raise TypeError("Stencil Set value '%s' should be %s, not %s"
                                 % (key, cls, type(self.manifest[key])))
 
-    def _options(self, stencil):
-        g_opts = self.manifest.get('options', {})
-        if stencil in self._stencils:
-            l_opts = self._stencils[stencil].get('options', {})
-        else:
-            raise ValueError("Stencil %s not a valid stencil" % stencil)
-
-        return g_opts.update(l_opts)
-
     @property
     def manifest(self):
+        """The manifest definition of the stencilset as a dict."""
         if not self._manifest:
             with open(self.manifest_path) as man:
                 self._manifest = json.load(man)
@@ -74,11 +75,13 @@ class StencilSet(object):
 
     @property
     def stencils(self):
+        """List of stencils."""
         if not self._stencils:
             self._stencils = self.manifest['stencils']
         return self._stencils
 
     def get_stencil(self, stencil_name, **options):
+        """Return a Stencil instance given a stencil name."""
         if stencil_name not in self.manifest.get('stencils', {}):
             raise ValueError("Stencil '%s' not declared in StencilSet "
                              "manifest." % stencil_name)

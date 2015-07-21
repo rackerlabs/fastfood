@@ -23,10 +23,12 @@ import logging
 import os
 import sys
 import threading
+
 try:
     import urllib2 as urllib
 except ImportError:
     # Python 3
+    # pylint: disable=no-name-in-module
     from urllib import request as urllib
 
 import fastfood
@@ -34,7 +36,7 @@ from fastfood import exc
 from fastfood import food
 from fastfood import pack
 
-_local = threading.local()
+_LOCAL = threading.local()
 LOG = logging.getLogger(__name__)
 NAMESPACE = 'fastfood'
 EXCLAIM = u'\U00002757'
@@ -45,7 +47,7 @@ RED_X = u'\U0000274C'
 
 
 def _fastfood_build(args):
-
+    """Run on `fastfood build`."""
     written_files, cookbook = food.build_cookbook(
         args.config_file, args.template_pack,
         args.cookbooks, args.force)
@@ -60,6 +62,7 @@ def _fastfood_build(args):
 
 
 def _fastfood_list(args):
+    """Run on `fastfood list`."""
     template_pack = pack.TemplatePack(args.template_pack)
     if args.stencil_set:
         stencil_set = template_pack.load_stencil_set(args.stencil_set)
@@ -73,6 +76,7 @@ def _fastfood_list(args):
 
 
 def _fastfood_show(args):
+    """Run on `fastfood show`."""
     template_pack = pack.TemplatePack(args.template_pack)
     if args.stencil_set:
         stencil_set = template_pack.load_stencil_set(args.stencil_set)
@@ -86,7 +90,7 @@ def _fastfood_show(args):
 
 
 def _release_info():
-
+    """Check latest fastfood release info from PyPI."""
     pypi_url = 'http://pypi.python.org/pypi/fastfood/json'
     headers = {
         'Accept': 'application/json',
@@ -98,18 +102,21 @@ def _release_info():
 
 
 def _split_key_val(option):
+    """Split extra command line data into key-value pairs."""
     key_val = option.split(':', 1)
     assert len(key_val) == 2, "Bad option %s" % option
     return key_val
 
 
 def getenv(option_name, default=None):
+    """Return the option from the environment in the FASTFOOD namespace."""
     env = "%s_%s" % (NAMESPACE.upper(), option_name.upper())
     return os.environ.get(env, default)
 
 
 def main(argv=None):
     """fastfood command line interface."""
+    # pylint: disable=missing-docstring
     import argparse
     import traceback
 
@@ -145,7 +152,6 @@ def main(argv=None):
         version='%s %s' % (parser.prog, version_string))
 
     class LatestVersionAction(vers_arg.__class__):
-
         def __call__(self, prsr, *args, **kw):
             info = _release_info()
             vers = info['info']['version']
@@ -217,7 +223,7 @@ def main(argv=None):
 
     build_parser.set_defaults(func=_fastfood_build)
 
-    setattr(_local, 'argparser', parser)
+    setattr(_LOCAL, 'argparser', parser)
     if not argv:
         argv = None
     args = parser.parse_args(args=argv)
@@ -230,7 +236,7 @@ def main(argv=None):
         args.func(args)
     except exc.FastfoodError as err:
         title = exc.get_friendly_title(err)
-        print('%s  %s: %s' % (RED_X, title, err.message),
+        print('%s  %s: %s' % (RED_X, title, str(err)),
               file=sys.stderr)
         sys.stderr.flush()
         sys.exit(1)

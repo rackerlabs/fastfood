@@ -2,22 +2,24 @@
 
 import unittest
 
-FIRST_BERKS = """
-source 'https://supermarket.getchef.com'
+FIRST_BERKS = (
+    "source 'https://supermarket.getchef.com'\n\n"
 
-cookbook 'newrelic_plugins', git: 'git@github.com:rackspace-cookbooks/newrelic_plugins_chef.git'
-cookbook 'disable_ipv6', path: 'test/fixtures/cookbooks/disable_ipv6'
-cookbook 'wrapper', path: 'test/fixtures/cookbooks/wrapper'
-cookbook 'apt'
+    "cookbook 'newrelic_plugins', git: "
+    "'git@github.com:rackspace-cookbooks/newrelic_plugins_chef.git'\n"
+    "cookbook 'disable_ipv6', path: 'test/fixtures/cookbooks/disable_ipv6'\n"
+    "cookbook 'wrapper', path: 'test/fixtures/cookbooks/wrapper'\n"
+    "cookbook 'apt'\n\n"
 
-# until https://github.com/elasticsearch/cookbook-elasticsearch/pull/230
-cookbook 'elasticsearch', '~> 0.3', git:'git@github.com:racker/cookbook-elasticsearch.git'
+    "# u https://github.com/elasticsearch/cookbook-elasticsearch/pull/230\n"
+    "cookbook 'elasticsearch', '~> 0.3', "
+    "git:'git@github.com:racker/cookbook-elasticsearch.git'\n\n"
 
-# until https://github.com/lusis/chef-logstash/pull/336 & 394
-cookbook 'logstash', git:'git@github.com:racker/chef-logstash.git'
+    "# until https://github.com/lusis/chef-logstash/pull/336 & 394\n"
+    "cookbook 'logstash', git:'git@github.com:racker/chef-logstash.git'\n\n"
 
-metadata
-"""
+    "metadata\n"
+)
 
 SECOND_BERKS = """
 source "https://supermarket.chef.io"
@@ -37,6 +39,7 @@ cookbook 'fake', '~> 9.1'
 import copy
 
 from fastfood import book
+
 
 class TestBerks(unittest.TestCase):
 
@@ -61,11 +64,12 @@ class TestBerks(unittest.TestCase):
         self.assertIn('fake', after['cookbook'])
         self.assertIn('yum', after['cookbook'])
         self.assertIn('source', after)
-        self.assertEqual(after['source'],
-                ['https://supermarket.getchef.com',
-                 'https://supermarket.chef.io'])
+        self.assertEqual(
+            after['source'],
+            ['https://supermarket.getchef.com',
+             'https://supermarket.chef.io'])
         self.assertEqual(after['cookbook']['fake']['constraint'],
-                        '~> 9.1')
+                         '~> 9.1')
         self.assertEqual(after['cookbook']['cron']['git'],
                          'git@github.com:rackspace-cookbooks/cron.git')
 
