@@ -148,6 +148,6 @@ jinja variable
 .. |latest pypi release| image:: https://img.shields.io/pypi/v/fastfood.svg
    :target: https://pypi.python.org/pypi/fastfood
 .. |Build Status on Travis for 'master' branch| image:: https://travis-ci.org/rackerlabs/fastfood.svg?branch=master
-   :target: https://travis-ci.org/checkmate/simpl
+   :target: https://travis-ci.org/rackerlabs/fastfood
 .. |Requirements Status from requires.io| image:: https://requires.io/github/rackerlabs/fastfood/requirements.svg?branch=master
    :target: https://requires.io/github/rackerlabs/fastfood/requirements/?branch=master
