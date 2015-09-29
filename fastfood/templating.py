@@ -38,7 +38,7 @@ def qstring(option):
 
 
 def ruby_truth(truth):
-    """Convert a Python truth to a Ruby truth"""
+    """Convert a Python truth to a Ruby truth."""
     if truth:
         return "true"
     else:
