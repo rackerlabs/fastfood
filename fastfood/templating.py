@@ -36,6 +36,7 @@ def qstring(option):
     else:
         return option
 
+
 def ruby_truth(truth):
     """Convert a Python truth to a Ruby truth"""
     if truth:
