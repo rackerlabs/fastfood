@@ -36,8 +36,15 @@ def qstring(option):
     else:
         return option
 
+def ruby_truth(truth):
+    """Convert a Python truth to a Ruby truth"""
+    if truth:
+        return "true"
+    else:
+        return "false"
 
 JINJA_ENV.globals['qstring'] = qstring
+JINJA_ENV.globals['ruby_truth'] = ruby_truth
 
 
 def render_templates(*files, **template_map):
