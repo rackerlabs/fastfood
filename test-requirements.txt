@@ -1,4 +1,4 @@
-coverage==4.3.3
+coverage==4.3.4
 flake8==3.2.1
 flake8-docstrings==1.0.2
 mock==2.0.0
