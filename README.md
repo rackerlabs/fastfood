@@ -1,9 +1,7 @@
-# fastfood
+# fastfood (Deprecated and No longer maintained)
 [![pypi](https://img.shields.io/pypi/v/fastfood.svg)](https://pypi.python.org/pypi/fastfood)
 [![travis](https://travis-ci.org/rackerlabs/fastfood.svg?branch=master)](https://travis-ci.org/rackerlabs/fastfood)
 [![requires.io](https://requires.io/github/rackerlabs/fastfood/requirements.svg?branch=master)](https://requires.io/github/rackerlabs/fastfood/requirements/?branch=master)
-
-========
 
 Helps build cookbooks faster by pre-templating parts and exposing
 options in a command line and config friendly way.
